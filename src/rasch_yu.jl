@@ -94,7 +94,7 @@ function SL_form!(R::Array{T,2}) where T
     end
 end
 
-function Regge_variables!(R::Array{Tint,2}, 
+function regge_variables!(R::Array{Tint,2}, 
                           j₁::Tint, j₂::Tint, j₃::Tint, 
                           m₁::Tint, m₂::Tint, m₃::Tint) where {Tint <: Integer}
     R[1,1] = -j₁+j₂+j₃
@@ -112,9 +112,9 @@ function Regge_variables!(R::Array{Tint,2},
     @inbounds return vars  # L, X, T, B, S
 end
 
-function Rasch_Yu_index!(indextype::Type{<:Integer}, R::Array{Tint,2}, 
+function rasch_yu_index!(indextype::Type{<:Integer}, R::Array{Tint,2}, 
                         j₁, j₂, j₃, m₁, m₂, m₃) where {Tint <: Integer}
-    L, X, T, B, S = indextype.(Regge_variables!(R, j₁, j₂, j₃, m₁, m₂, m₃))
+    L, X, T, B, S = indextype.(regge_variables!(R, j₁, j₂, j₃, m₁, m₂, m₃))
     c = convert(indextype, ceil(
         L * (24 + L * (50 + L * (35 + L * (10 + L)))) / 120 + 
         X * (6 + (X * (11 + X * (6 + X)))) / 24 +
@@ -122,9 +122,9 @@ function Rasch_Yu_index!(indextype::Type{<:Integer}, R::Array{Tint,2},
     return c
 end
 
-function Rasch_Yu_index(indextype::Type{<:Integer}, j₁, j₂, j₃, m₁, m₂, m₃)
+function rasch_yu_index(indextype::Type{<:Integer}, j₁, j₂, j₃, m₁, m₂, m₃)
     R = zeros(Int, (3,3))
-    Rasch_Yu_index!(indextype, R, j₁, j₂, j₃, m₁, m₂, m₃)
+    rasch_yu_index!(indextype, R, j₁, j₂, j₃, m₁, m₂, m₃)
 end
 
 
@@ -135,9 +135,9 @@ function confirm_symmetry(maxj)
         j₃ += 1
     end
     m₁, m₂, m₃ = 0, 0, 0
-    c1 = Rasch_Yu_index(Int128, j₁, j₂, j₃, m₁, m₂, m₃)
+    c1 = rasch_yu_index(Int128, j₁, j₂, j₃, m₁, m₂, m₃)
 
-    c2 = Rasch_Yu_index(Int128, 
+    c2 = rasch_yu_index(Int128, 
         j₁, (j₂ + j₃ - m₁)/2, (j₂ + j₃ + m₁)/2, 
         j₃ - j₂, (j₂ - j₃ - m₁)/2 - m₃, (j₂ - j₃ + m₁)/2 + m₃)
 
