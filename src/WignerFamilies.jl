@@ -2,7 +2,7 @@ module WignerFamilies
 
 export nonclassical_wigner3j
 
-include("rausch_yu.jl")
-include("recursive3j.jl")
+include("rasch_yu.jl")
+include("recurrence.jl")
 
 end
