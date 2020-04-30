@@ -3,6 +3,9 @@ uuid = "a8f88a7a-0a89-491c-8ecb-051e99aa9f5e"
 authors = ["xzackli <xzackli@gmail.com> and contributors"]
 version = "0.1.0"
 
+[deps]
+HalfIntegers = "f0d1745a-41c9-11e9-1dd9-e5d34d218721"
+
 [compat]
 julia = "1"
 
