@@ -15,4 +15,6 @@ using WignerFamilies
 j₁, w3j = nonclassical_wigner3j(100, 60, 70, -55)
 ```
 
+This generates Figure 1 of Luscombe and Luban 1998.
+
 ![example plot](examples/luscombe_and_luban_1998.png)

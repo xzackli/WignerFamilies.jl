@@ -50,7 +50,7 @@ function normalization(w::AbstractWignerF, ψ₀::AbstractVector{<:Real})
     for j in eachindex(ψ₀)
         norm += (2j + 1) * ψ₀[j]^2
     end
-    return sqrt(norm)
+    return sqrt(abs(norm))
 end
 
 
@@ -79,31 +79,32 @@ Yψ(w::AbstractWignerH, j) = F(w, j)
 Zψ(w::AbstractWignerH, j)= (j+1) * E(w, j)
 
 """
-    nonclassical_wigner3j(j₂::T, j₃::T, m₂::T, m₃::T) where T
+    nonclassical_wigner3j(T::Type{<:Real}, j₂::Tn, j₃::Tn, m₂::Tn, m₃::Tn) where {T, Tn}
 
-Computes all allowed j₁ given fixed j₂, j₃, m₂, m₃, m₁=-m₂-m₃. This only works in 
-non-classical regions.
+Computes all allowed j₁ given fixed j₂, j₃, m₂, m₃, m₁=-m₂-m₃. This only is guarantted to
+work in non-classical regions.
 
 # Arguments
-- `j₂::T`: quantum number
-- `j₃::T`: quantum number
-- `m₂::T`: quantum number
-- `m₃::T`: quantum number
+- `T::Type{<:Real}`: output array type
+- `j₂::Tn`: quantum number
+- `j₃::Tn`: quantum number
+- `m₂::Tn`: quantum number
+- `m₃::Tn`: quantum number
 
 # Returns
 - `Tuple{Vector{Int}, Vector{T}}`: j₁ values and wigner symbols
 """
-function nonclassical_wigner3j(j₂::T, j₃::T, m₂::T, m₃::T) where T
+function nonclassical_wigner3j(T::Type{<:Real}, 
+                               j₂::Tn, j₃::Tn, m₂::Tn, m₃::Tn) where {Tn}
     w = WignerF(j₂, j₃, m₂, m₃)
-    start = Int(ceil((w.nₘᵢₙ + w.nₘₐₓ)/2))
-    w3j = OffsetArray(zeros(length(w.nₘᵢₙ:w.nₘₐₓ)), w.nₘᵢₙ:w.nₘₐₓ)
-    rψ!(w, start, w3j)
-    sψ!(w, start, w3j)
-    
-    for i in (start+1):w.nₘₐₓ
+    nmid = Int(ceil((w.nₘᵢₙ + w.nₘₐₓ)/2))
+    w3j = OffsetArray(zeros(T, length(w.nₘᵢₙ:w.nₘₐₓ)), w.nₘᵢₙ:w.nₘₐₓ)
+    rψ!(w, nmid, w3j)
+    sψ!(w, nmid, w3j)
+    for i in (nmid+1):w.nₘₐₓ  # product the ratios upwards
         w3j[i] *= w3j[i-1]
     end
-    for i in (start-1):-1:w.nₘᵢₙ
+    for i in (nmid-1):-1:w.nₘᵢₙ  # product the ratios downwards
         w3j[i] *= w3j[i+1]
     end
     norm = normalization(w, w3j)
@@ -117,9 +118,9 @@ end
 
 
 function f_to_min_m0!(w::AbstractWignerF, 
-    nmid::Integer, ψ::AbstractVector{T}) where {T<:Real}
-
-    ψ[nmid] = -one(T)
+                      nmid::Int, ψ::AbstractVector{T}) where {T<:Real}
+    @assert iseven(nmid)
+    ψ[nmid] = one(T)
     ψ[nmid+1] = zero(T)
     for n in (nmid+1):2:(w.nₘₐₓ-1)
         Xn = Xψ(w, n)
@@ -131,9 +132,10 @@ function f_to_min_m0!(w::AbstractWignerF,
     end
 end
 
-function f_to_max_m0!(w::AbstractWignerF, nmid::Integer, 
-                     ψ::AbstractVector{T}) where {T<:Real}
-    ψ[nmid] = -one(T)
+function f_to_max_m0!(w::AbstractWignerF, nmid::Int, 
+                      ψ::AbstractVector{T}) where {T<:Real}
+    @assert iseven(nmid)
+    ψ[nmid] = one(T)
     ψ[nmid-1] = zero(T)
     for n in (nmid-1):-2:(w.nₘᵢₙ+1)
         Zn = Zψ(w, n)
@@ -144,3 +146,41 @@ function f_to_max_m0!(w::AbstractWignerF, nmid::Integer,
         end
     end
 end
+
+
+"""
+    classical_wigner3j_m0(T::Type{<:Real}, j₂::Tn, j₃::Tn, m₂::Tn, m₃::Tn) where {T, Tn}
+
+Computes all allowed j₁ given fixed j₂, j₃, m₁ + m₂ + m₃ = 0. This applies the classical
+three-term recurrence relation and iterates two at a time, since all odd ∑jᵢ are zero.
+Unlike other Wigner symbols, this special case requires iterating outwards, as one must
+recur towards increasing |fⱼ| for stability.
+
+# Arguments
+- `T::Type{<:Real}`: output array type
+- `j₂::Tn`: quantum number
+- `j₃::Tn`: quantum number
+- `m₂::Tn`: quantum number
+
+# Returns
+- `Tuple{Vector{Int}, Vector{T}}`: j₁ values and wigner symbols
+"""
+function classical_wigner3j_m0(T::Type{<:Real}, 
+                               j₂::Tn, j₃::Tn, m₂::Tn, m₃::Tn) where {Tn}
+    
+    w = WignerF(j₂, j₃, m₂, m₃)
+    nmid = Int( (w.nₘᵢₙ + w.nₘₐₓ) / 2 )
+    nmid = iseven(nmid) ? nmid : nmid + 1
+    j_array = collect(Int(w.nₘᵢₙ):Int(w.nₘₐₓ))
+    w3j = OffsetArray(zeros(T, length(j_array)), j_array[1]:j_array[end])
+    f_to_min_m0!(w, nmid, w3j)
+    f_to_max_m0!(w, nmid, w3j)
+    norm = normalization(w, w3j)
+    w3j ./= norm
+    fjmax_sgn = iseven(w.j₂ + w.j₃ + w.m₂ + w.m₃) ? 1 : -1
+    if sign(w3j[w.nₘₐₓ]) != fjmax_sgn
+        w3j .*= -1
+    end
+    return j_array, w3j
+end
+
