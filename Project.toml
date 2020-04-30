@@ -1,0 +1,13 @@
+name = "WignerFamilies"
+uuid = "a8f88a7a-0a89-491c-8ecb-051e99aa9f5e"
+authors = ["xzackli <xzackli@gmail.com> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
