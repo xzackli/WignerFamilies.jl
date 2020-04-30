@@ -115,7 +115,8 @@ function nonclassical_wigner3j(T::Type{<:Real},
     end
     return collect(w.nₘᵢₙ:w.nₘₐₓ), w3j
 end
-
+nonclassical_wigner3j(j₂::Tn, j₃::Tn, m₂::Tn, m₃::Tn) where {Tn} = nonclassical_wigner3j(
+    Float64, j₂, j₃, m₂, m₃)
 
 function f_to_min_m0!(w::AbstractWignerF, 
                       nmid::Int, ψ::AbstractVector{T}) where {T<:Real}
