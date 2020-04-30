@@ -1,0 +1,3 @@
+var documenterSearchIndex = {"docs":
+[{"location":"#","page":"Home","title":"Home","text":"CurrentModule = WignerFamilies","category":"page"},{"location":"#WignerFamilies-1","page":"Home","title":"WignerFamilies","text":"","category":"section"},{"location":"#","page":"Home","title":"Home","text":"","category":"page"},{"location":"#","page":"Home","title":"Home","text":"Modules = [WignerFamilies]","category":"page"},{"location":"#WignerFamilies.swap_triangular-Tuple{Any}","page":"Home","title":"WignerFamilies.swap_triangular","text":"Evens out an array which scales linearly with difficulty by swapping elements such that [1,2,3,4,5,6] is mapped to [1,6,2,5,3,4].\n\n\n\n\n\n","category":"method"}]
+}
