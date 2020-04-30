@@ -78,7 +78,21 @@ Xψ(w::AbstractWignerH, j) = j * E(w, j+1)
 Yψ(w::AbstractWignerH, j) = F(w, j)
 Zψ(w::AbstractWignerH, j)= (j+1) * E(w, j)
 
+"""
+    nonclassical_wigner3j(j₂::T, j₃::T, m₂::T, m₃::T) where T
 
+Computes all allowed j₁ given fixed j₂, j₃, m₂, m₃, m₁=-m₂-m₃. This only works in 
+non-classical regions.
+
+# Arguments
+- `j₂::T`: quantum number
+- `j₃::T`: quantum number
+- `m₂::T`: quantum number
+- `m₃::T`: quantum number
+
+# Returns
+- `Tuple{Vector{Int}, Vector{T}}`: j₁ values and wigner symbols
+"""
 function nonclassical_wigner3j(j₂::T, j₃::T, m₂::T, m₃::T) where T
     w = WignerF(j₂, j₃, m₂, m₃)
     start = Int(ceil((w.nₘᵢₙ + w.nₘₐₓ)/2))
