@@ -2,21 +2,17 @@ using WignerFamilies
 using PyPlot 
 using OffsetArrays
 
-
-j₂ = big(1000)
-j₃ = big(1000)
-m₁ = big(0)
-m₂ = big(0)
-m₃ = big(0)
-js, w3j = WignerFamilies.classical_wigner3j_m0(BigFloat, j₂, j₃, m₂, m₃)
-
+j₂, j₃, m₂, m₃ = 100, 60, 0, 0
+w = WignerF(Float64, j₂, j₃, m₂, m₃)
+w3j = get_wigner_array(w)
+@allocated WignerFamilies.classical_wigner3j_m0!(w, w3j)
 
 ##
 plt.clf()
 plot(js, Float64.(w3j))
 using WignerSymbols
 plt.plot(js, 
-    [wigner3j(Float64, n, j₂, j₃, 0, 0) for n in js], alpha=0.5)
+    [Float64(wigner3j(BigFloat, n, j₂, j₃, 0, 0)) for n in js], alpha=0.5)
 plt.gcf()
 
 ##
