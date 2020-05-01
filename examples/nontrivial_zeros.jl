@@ -12,10 +12,10 @@ Y(n) = iszero(n) ? Y₀ : 4(n-1) + 7Y(n-1)
 
 n_seq = 1
 # j₂, j₃, m₂, m₃ = 100, 60, 70, -55
-# j₂, j₃, m₂, m₃ = (2X(n_seq)+1)/6, (X(n_seq)+2)/6, HalfInt(3/2), HalfInt(3/2)
+j₂, j₃, m₂, m₃ = (2X(n_seq)+1)/6, (X(n_seq)+2)/6, HalfInt(3/2), HalfInt(3/2)
 # j₂, j₃, m₂, m₃ = 4, 4, 2, -2
 
-j₂, j₃, m₂, m₃ = HalfInt(23/2), HalfInt(21/2), HalfInt(3/2), HalfInt(3/2)
+# j₂, j₃, m₂, m₃ = HalfInt(23/2), HalfInt(21/2), HalfInt(3/2), HalfInt(3/2)
 
 m₁ = -m₂ - m₃
 
@@ -76,7 +76,7 @@ gcf()
 
 ##
 plt.clf()
-plt.plot( Float64.(exact ./ w3j.parent))
+plt.plot( Float64.(exact .- w3j.parent))
 plt.gcf()
 
 ##

@@ -94,7 +94,7 @@ function ψauxplus!(w::AbstractWignerF{T},
         if iszero(w.nₘᵢₙ)
             ψ[w.nₘᵢₙ+1] = -(w.m₃-w.m₂+2B(w,w.nₘᵢₙ)) / A(w,1)
         else
-            ψ[w.nₘᵢₙ+1] = -(B(w,w.nₘᵢₙ+1)) / (w.nₘᵢₙ* A(w, w.nₘᵢₙ+1))
+            ψ[w.nₘᵢₙ+1] = -(B(w,w.nₘᵢₙ)) / (w.nₘᵢₙ* A(w, w.nₘᵢₙ+1))
         end
         start_index = w.nₘᵢₙ+1
     end
