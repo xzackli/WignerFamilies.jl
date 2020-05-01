@@ -110,6 +110,16 @@ function ψauxplus!(w::AbstractWignerF{T},
 end
 
 
+function selection_rules(w::AbstractWignerF{T}) where T
+    small = 10 * eps(T)
+    return (
+        (abs(w.m₂) < w.j₂ + small) &&
+        (abs(w.m₃) < w.j₃ + small) &&
+        isinteger(w.m₂ - w.j₂) &&
+        isinteger(w.m₃ - w.j₃)
+    )
+end
+
 
 A(w::AbstractWignerF, j) = sqrt((j^2 - (w.j₂ - w.j₃)^2) * 
     ((w.j₂ + w.j₃ + 1)^2 - j^2) * (j^2 - (w.m₂ + w.m₃)^2))
@@ -127,35 +137,10 @@ function normalization(w::AbstractWignerF{T}, ψ₀::AbstractVector{T}) where T
 end
 f_jmax_sgn(w::AbstractWignerF) = iseven(Int(w.j₂ - w.j₃ + w.m₂ + w.m₃)) ? 1 : -1
 
-struct WignerH{T} <: AbstractWignerH{T}
-    j₂::T
-    j₃::T
-    l₁::T
-    l₂::T
-    l₃::T
-    nₘᵢₙ::T
-    nₘₐₓ::T
-
-    WignerH(::Type{T}, j₂, j₃, l₁, l₂, l₃) where {T} = new{T}(
-        j₂, j₃, l₁, l₂, l₃, max(abs(j₂ - j₃), abs(l₂ - l₃)), min(j₂ + j₃, l₂ + l₃))
-end
-
-E(w::AbstractWignerH, j) = sqrt((j^2 - (w.j₂ - w.j₃)^2) * ((w.j₂ + w.j₃ + 1)^2 - j^2) * 
-    (j^2 - (w.l₂ - w.l₃)^2) * ((w.l₂ + w.l₃ + 1)^2 - j^2))
-F(w::AbstractWignerH, j) = (2j+1) * (
-    j * (j + 1)  * (-j * (j+1) + w.j₂ * (w.j₂ + 1) + w.j₃ * (w.j₃ + 1) - 2 * w.l₁ * (w.l₁ + 1)) + 
-    w.l₂ * (w.l₂ + 1) * (j * (j+1) + w.j₂ * (w.j₂ + 1) - w.j₃ * (w.j₃ + 1)) +
-    w.l₃ * (w.l₃ + 1) * (j * (j+1) - w.j₂ * (w.j₂ + 1) + w.j₃ * (w.j₃ + 1))
-)
-Xψ(w::AbstractWignerH, j) = j * E(w, j+1)
-Yψ(w::AbstractWignerH, j) = F(w, j)
-Zψ(w::AbstractWignerH, j)= (j+1) * E(w, j)
-
 """
-    nonclassical_wigner3j(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real}
+    wigner3j_f(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real}
 
-Computes all allowed j₁ given fixed j₂, j₃, m₂, m₃, m₁=-m₂-m₃. This only is guarantted to
-work in non-classical regions.
+Computes all allowed j₁ given fixed j₂, j₃, m₂, m₃, m₁=-m₂-m₃. 
 
 # Arguments
 - `T::Type{<:Real}`: output array type
@@ -167,23 +152,50 @@ work in non-classical regions.
 # Returns
 - `Tuple{Vector{Int}, Vector{T}}`: j₁ values and wigner symbols
 """
-function nonclassical_wigner3j(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real}
-    w = WignerF(T, j₂, j₃, m₂, m₃)
-    w3j = get_wigner_array(w)
-    nonclassical_wigner3j!(w, w3j)
-    return collect(w.nₘᵢₙ:w.nₘₐₓ), w3j
+function wigner3j_f(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real}
+    w = WignerF(T, j₂, j₃, m₂, m₃)  # establish the problem variables and method
+    if !selection_rules(w)
+        # throw(DomainError("Bad combination of inputs."))
+        return OffsetArray(T[], 1:0)
+    end
+    w3j = get_wigner_array(w)  # construct an OffsetArray with the right indices and type
+    wigner3j_f!(w, w3j)  # call the mutating function
+    return w3j
 end
-nonclassical_wigner3j(j₂, j₃, m₂, m₃) = nonclassical_wigner3j(Float64, j₂, j₃, m₂, m₃)
-function nonclassical_wigner3j!(w::AbstractWignerF{T}, w3j::AbstractVector{T}) where T
+wigner3j_f(j₂, j₃, m₂, m₃) = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
+
+function wigner3j_f!(w::AbstractWignerF{T}, w3j::AbstractVector{T}) where T
+
+    # special case that performs an outwards classical solution if m₁ = m₂ = m₃ = 0
+    # and skips the symbols with odd ∑jᵢ since those are zero.
+    if iszero(w.m₂) && iszero(w.m₃)
+        return classical_wigner3j_m0!(w, w3j)
+    end
+
     nmid = Int(ceil((w.nₘᵢₙ + w.nₘₐₓ)/2))
-    rψ!(w, nmid, w3j)
-    sψ!(w, nmid, w3j)
-    for i in (nmid+1):w.nₘₐₓ  # product the ratios upwards
-        w3j[i] *= w3j[i-1]
+    # attempt the non-classical two term nonlinear recurrences
+    n₊ = rψ!(w, nmid, w3j) 
+    n₋ = sψ!(w, nmid, w3j)
+    for k in (n₊+1):w.nₘₐₓ  # product the ratios upwards
+        w3j[k] *= w3j[k-1]
     end
-    for i in (nmid-1):-1:w.nₘᵢₙ  # product the ratios downwards
-        w3j[i] *= w3j[i+1]
+    for k in (n₋-1):-1:w.nₘᵢₙ  # product the ratios downwards
+        w3j[k] *= w3j[k+1]
     end
+    # now use the three-term classical recurrence in the middle
+    ψn₋ = w3j[n₋]
+    ψn₊ = w3j[n₊]
+    ψauxplus!(w, n₋, n₊, w3j)
+    # rescale the three parts
+    if n₋ > w.nₘᵢₙ
+        scale_middle = ψn₋ / w3j[n₋]
+        w3j[w.nₘᵢₙ:(n₋+1)] .*= scale_middle
+    end
+    if n₊ < w.nₘₐₓ
+        scale_end = w3j[n₊] / ψn₊
+        w3j[(n₊+1):w.nₘₐₓ] .*= scale_end
+    end
+    # normalize the results
     norm = normalization(w, w3j)
     w3j ./= norm
     if sign(w3j[w.nₘₐₓ]) != f_jmax_sgn(w)
@@ -247,7 +259,7 @@ function classical_wigner3j_m0(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real
     w = WignerF(j₂, j₃, m₂, m₃)
     w3j = get_wigner_array(w)
     classical_wigner3j_m0!(w, w3j)
-    return collect(w.nₘᵢₙ:w.nₘₐₓ), w3j
+    return w3j
 end
 
 function classical_wigner3j_m0!(w::AbstractWignerF{T}, w3j::AbstractVector{T}) where T
@@ -261,4 +273,32 @@ function classical_wigner3j_m0!(w::AbstractWignerF{T}, w3j::AbstractVector{T}) w
         w3j .*= -1
     end
 end
+
+
+
+## ----- todo: 6j
+
+# struct WignerH{T} <: AbstractWignerH{T}
+#     j₂::T
+#     j₃::T
+#     l₁::T
+#     l₂::T
+#     l₃::T
+#     nₘᵢₙ::T
+#     nₘₐₓ::T
+
+#     WignerH(::Type{T}, j₂, j₃, l₁, l₂, l₃) where {T} = new{T}(
+#         j₂, j₃, l₁, l₂, l₃, max(abs(j₂ - j₃), abs(l₂ - l₃)), min(j₂ + j₃, l₂ + l₃))
+# end
+
+# E(w::AbstractWignerH, j) = sqrt((j^2 - (w.j₂ - w.j₃)^2) * ((w.j₂ + w.j₃ + 1)^2 - j^2) * 
+#     (j^2 - (w.l₂ - w.l₃)^2) * ((w.l₂ + w.l₃ + 1)^2 - j^2))
+# F(w::AbstractWignerH, j) = (2j+1) * (
+#     j * (j + 1)  * (-j * (j+1) + w.j₂ * (w.j₂ + 1) + w.j₃ * (w.j₃ + 1) - 2 * w.l₁ * (w.l₁ + 1)) + 
+#     w.l₂ * (w.l₂ + 1) * (j * (j+1) + w.j₂ * (w.j₂ + 1) - w.j₃ * (w.j₃ + 1)) +
+#     w.l₃ * (w.l₃ + 1) * (j * (j+1) - w.j₂ * (w.j₂ + 1) + w.j₃ * (w.j₃ + 1))
+# )
+# Xψ(w::AbstractWignerH, j) = j * E(w, j+1)
+# Yψ(w::AbstractWignerH, j) = F(w, j)
+# Zψ(w::AbstractWignerH, j)= (j+1) * E(w, j)
 

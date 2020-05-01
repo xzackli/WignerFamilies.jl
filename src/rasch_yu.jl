@@ -94,9 +94,9 @@ function SL_form!(R::Array{T,2}) where T
     end
 end
 
-function regge_variables!(R::Array{Tint,2}, 
-                          j₁::Tint, j₂::Tint, j₃::Tint, 
-                          m₁::Tint, m₂::Tint, m₃::Tint) where {Tint <: Integer}
+function regge_variables!(R::Array{TR,2}, 
+                          j₁, j₂, j₃, 
+                          m₁, m₂, m₃) where {TR, Tint}
     R[1,1] = -j₁+j₂+j₃
     R[1,2] = j₁-j₂+j₃
     R[1,3] = j₁+j₂-j₃
@@ -112,37 +112,21 @@ function regge_variables!(R::Array{Tint,2},
     @inbounds return vars  # L, X, T, B, S
 end
 
-function rasch_yu_index!(indextype::Type{<:Integer}, R::Array{Tint,2}, 
-                        j₁, j₂, j₃, m₁, m₂, m₃) where {Tint <: Integer}
-    L, X, T, B, S = indextype.(regge_variables!(R, j₁, j₂, j₃, m₁, m₂, m₃))
-    c = convert(indextype, ceil(
+function rasch_yu_index!(::Type{Tindex}, R::Array{Tint,2}, 
+                        j₁, j₂, j₃, m₁, m₂, m₃) where {Tindex <: Integer, Tint <: Integer}
+    L, X, T, B, S = Tindex.(regge_variables!(R, j₁, j₂, j₃, m₁, m₂, m₃))
+    c = convert(Tindex, ceil(
         L * (24 + L * (50 + L * (35 + L * (10 + L)))) / 120 + 
         X * (6 + (X * (11 + X * (6 + X)))) / 24 +
         T * (2 + T * (3 + T)) / 6 + B * (B + 1) / 2 + S + 1))
     return c
 end
 
-function rasch_yu_index(indextype::Type{<:Integer}, j₁, j₂, j₃, m₁, m₂, m₃)
+function rasch_yu_index(::Type{Tindex}, j₁, j₂, j₃, m₁, m₂, m₃) where {Tindex <: Integer}
     R = zeros(Int, (3,3))
-    rasch_yu_index!(indextype, R, j₁, j₂, j₃, m₁, m₂, m₃)
+    rasch_yu_index!(Tindex, R, j₁, j₂, j₃, m₁, m₂, m₃)
 end
 
-
-function confirm_symmetry(maxj)
-    j₁, j₂ = rand(0:maxj, 2)
-    j₃ = rand(abs(j₁ - j₂):(j₁ + j₂))
-    if isodd(j₁ + j₂ + j₃)
-        j₃ += 1
-    end
-    m₁, m₂, m₃ = 0, 0, 0
-    c1 = rasch_yu_index(Int128, j₁, j₂, j₃, m₁, m₂, m₃)
-
-    c2 = rasch_yu_index(Int128, 
-        j₁, (j₂ + j₃ - m₁)/2, (j₂ + j₃ + m₁)/2, 
-        j₃ - j₂, (j₂ - j₃ - m₁)/2 - m₃, (j₂ - j₃ + m₁)/2 + m₃)
-
-    c1, c2
-end
       
 """
 Evens out an array which scales linearly with difficulty by swapping elements such that

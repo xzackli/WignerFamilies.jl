@@ -9,8 +9,9 @@ X₀, Y₀ = 43, 25
 # X₀, Y₀ = 109, 63
 X(n) = iszero(n) ? X₀ : 7X(n-1) + 12Y(n-1)
 Y(n) = iszero(n) ? Y₀ : 4(n-1) + 7Y(n-1)
-
-n_seq = 1
+n_seq = 2
+(2X(n_seq)+1)/6, (X(n_seq)+2)/6
+##
 # j₂, j₃, m₂, m₃ = 100, 60, 70, -55
 j₂, j₃, m₂, m₃ = (2X(n_seq)+1)/6, (X(n_seq)+2)/6, HalfInt(3/2), HalfInt(3/2)
 # j₂, j₃, m₂, m₃ = 4, 4, 2, -2
@@ -24,7 +25,8 @@ w = WignerF(BigFloat, j₂, j₃, m₂, m₃)
 
 nmid = Int(ceil((w.nₘᵢₙ + w.nₘₐₓ)/2))
 nmid = iseven(nmid) ? nmid : nmid + 1
-println(w.nₘᵢₙ, " ", nmid, " ", w.nₘₐₓ)
+
+
 w3j = get_wigner_array(w)
 
 n₊ = WignerFamilies.rψ!(w, nmid, w3j)
@@ -37,7 +39,6 @@ for k in (n₋-1):-1:w.nₘᵢₙ  # product the ratios downwards
     w3j[k] *= w3j[k+1]
 end
 
-println(n₋, ", ", n₊)
 
 ψn₋ = w3j[n₋]
 ψn₊ = w3j[n₊]
@@ -79,4 +80,8 @@ plt.clf()
 plt.plot( Float64.(exact .- w3j.parent))
 plt.gcf()
 
+##
+w = WignerF(BigFloat, 100, 100, 0, 0)
+w3j = get_wigner_array(w)
+@time classical_wigner3j_m0!(w, w3j)
 ##
