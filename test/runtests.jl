@@ -28,7 +28,7 @@ import WignerSymbols  # only a test-dep, for comparisons
     end
 end
 ##
-@testset "f: ∑mᵢ = 0 special case" begin
+@testset "f: mᵢ = 0 special case" begin
     j₂, j₃, m₂, m₃ = 5000, 5002, 0, 0
     w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
     j_array = collect(eachindex(w3j))

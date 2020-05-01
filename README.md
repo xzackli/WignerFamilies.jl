@@ -18,5 +18,5 @@ j_array = collect(eachindex(w3j))
 
 This generates Figure 1 of Luscombe and Luban 1998.
 <p align="center">
-![example plot](examples/luscombe_and_luban_1998.svg)
+<img width=70% src="examples/luscombe_and_luban_1998.svg">
 </p>
