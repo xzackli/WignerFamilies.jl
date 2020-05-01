@@ -11,7 +11,7 @@ struct WignerF{T} <: AbstractWignerF{T}
     nₘᵢₙ::Int
     nₘₐₓ::Int
 end
-function WignerF(T::Type{<:Real}, j₂, j₃, m₂, m₃)
+function WignerF(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real}
     WignerF{T}(j₂, j₃, m₂, m₃, max(abs(j₂ - j₃), abs(m₂ + m₃)), j₂ + j₃)
 end
 WignerF(j₂, j₃, m₂, m₃) = WignerF(Float64, j₂, j₃, m₂, m₃)
@@ -47,36 +47,59 @@ generates the ratio rψ(n) = ψ(n) / ψ(n+1) in the `iterates` vector.
 - `stop::Int`: the index the iteration stopped
 """
 function rψ!(w::AbstractWigner{T}, nmid::Integer, ψ::AbstractVector{T}) where T
-    stop = 0
     for n in w.nₘₐₓ:-1:nmid
         if n == w.nₘₐₓ
             ψ[n] = -Zψ(w, n) / Yψ(w, n)
         else
             ψ[n] = -Zψ(w, n) / (Yψ(w, n) + Xψ(w, n) * ψ[n+1])
         end
-        if ψ[n] == 0 || abs(ψ[n]) ≥ 1.0
-            stop = n
-            # break
-        end
+        # if !isfinite(ψ[n])
+        #     ψ[n] = zero(T)
+        #     return n
+        # end
+        # if ψ[n] == 0 || abs(ψ[n]) ≥ 1.0 
+        #     return n
+        # end
     end
-    return stop
+    return nmid
 end
 
 function sψ!(w::AbstractWigner{T}, nmid::Integer, ψ::AbstractVector{T}) where T
-    stop = 0
     for n in w.nₘᵢₙ:nmid
         if n == w.nₘᵢₙ
             ψ[n] = -Xψ(w, n) / Yψ(w, n)
         else
             ψ[n] = -Xψ(w, n) / (Yψ(w, n) + Zψ(w, n) * ψ[n-1])
         end
-        if ψ[n] == 0 || abs(ψ[n]) ≥ 1.0
-            stop = n
-            # break
+        # if !isfinite(ψ[n])
+        #     ψ[n] = zero(T)
+        #     return n
+        # end
+        # if ψ[n] == zero(T) || abs(ψ[n]) ≥ one(T)
+        #     return n
+        # end
+    end
+    return nmid
+end
+
+
+"""
+Special case iteration for mᵢ=0.
+"""
+function ψauxplus!(w::AbstractWignerF{T}, 
+                   n₋::Int, nc::Int, ψ::AbstractVector{T}) where {T}
+
+    for n in (n₋):2:(w.nₘₐₓ-1)
+        Xn = Xψ(w, n)
+        if Xn == 0
+            ψ[n+1] = 0
+        else
+            ψ[n+1] = -(Yψ(w, n) * ψ[n] + Zψ(w, n) * ψ[n - 1]) / Xn
         end
     end
-    return stop
 end
+
+
 
 A(w::AbstractWignerF, j) = sqrt((j^2 - (w.j₂ - w.j₃)^2) * 
     ((w.j₂ + w.j₃ + 1)^2 - j^2) * (j^2 - (w.m₂ + w.m₃)^2))
@@ -103,7 +126,7 @@ struct WignerH{T} <: AbstractWignerH{T}
     nₘᵢₙ::T
     nₘₐₓ::T
 
-    WignerH(j₂::T, j₃::T, l₁::T, l₂::T, l₃::T) where T = new{T}(
+    WignerH(::Type{T}, j₂, j₃, l₁, l₂, l₃) where {T} = new{T}(
         j₂, j₃, l₁, l₂, l₃, max(abs(j₂ - j₃), abs(l₂ - l₃)), min(j₂ + j₃, l₂ + l₃))
 end
 
@@ -119,7 +142,7 @@ Yψ(w::AbstractWignerH, j) = F(w, j)
 Zψ(w::AbstractWignerH, j)= (j+1) * E(w, j)
 
 """
-    nonclassical_wigner3j(T::Type{<:Real}, j₂, j₃, m₂, m₃) where {T, Tn}
+    nonclassical_wigner3j(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real}
 
 Computes all allowed j₁ given fixed j₂, j₃, m₂, m₃, m₁=-m₂-m₃. This only is guarantted to
 work in non-classical regions.
@@ -134,7 +157,7 @@ work in non-classical regions.
 # Returns
 - `Tuple{Vector{Int}, Vector{T}}`: j₁ values and wigner symbols
 """
-function nonclassical_wigner3j(T::Type{<:Real}, j₂, j₃, m₂, m₃)
+function nonclassical_wigner3j(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real}
     w = WignerF(T, j₂, j₃, m₂, m₃)
     w3j = get_wigner_array(w)
     nonclassical_wigner3j!(w, w3j)
@@ -159,6 +182,9 @@ function nonclassical_wigner3j!(w::AbstractWignerF{T}, w3j::AbstractVector{T}) w
 end
 
 
+"""
+Special case iteration for mᵢ=0.
+"""
 function f_to_min_m0!(w::AbstractWignerF{T}, 
                       nmid::Int, ψ::AbstractVector{T}) where {T}
     @assert iseven(nmid)
@@ -190,7 +216,7 @@ end
 
 
 """
-    classical_wigner3j_m0(T::Type{<:Real}, j₂::Tn, j₃::Tn, m₂::Tn, m₃::Tn) where {T, Tn}
+    classical_wigner3j_m0(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real}
 
 Computes all allowed j₁ given fixed j₂, j₃, m₁, m₂, m₃, subject to m₁ + m₂ + m₃ = 0. This 
 applies the classical three-term recurrence relation and iterates two at a time, since in 
@@ -207,7 +233,7 @@ stability.
 # Returns
 - `Tuple{Vector{Int}, Vector{T}}`: j₁ values and wigner symbols
 """
-function classical_wigner3j_m0(T::Type{<:Real}, j₂, j₃, m₂, m₃)
+function classical_wigner3j_m0(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real}
     w = WignerF(j₂, j₃, m₂, m₃)
     w3j = get_wigner_array(w)
     classical_wigner3j_m0!(w, w3j)
