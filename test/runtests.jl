@@ -17,7 +17,7 @@ end
 @testset "f: ∑mᵢ = 0" begin
     j₂, j₃, m₂, m₃ = Int128.((5000, 5002, 0, 0))
     j_array, w3j = WignerFamilies.classical_wigner3j_m0(Float64, j₂, j₃, m₂, m₃)
-    for j in [j_array[1], j_array[2], j_array[3], j_array[end]]
+    for j in [j_array[i] for i in [1, 2, 4, 6, lastindex(j_array)]]
         @test w3j[j] ≈ Float64(WignerSymbols.wigner3j(BigFloat, j, j₂, j₃, -m₂-m₃, m₂))
     end
 end
