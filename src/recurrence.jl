@@ -214,11 +214,8 @@ function f_to_min_m0!(w::AbstractWignerF{T},
     ψ[nmid+1] = zero(T)
     for n in (nmid+1):2:(w.nₘₐₓ-1)
         Xn = Xψ(w, n)
-        if Xn == 0
-            ψ[n+1] = 0
-        else
-            ψ[n+1] = -(Yψ(w, n) * ψ[n] + Zψ(w, n) * ψ[n - 1]) / Xn
-        end
+        @assert abs(Xn) > zero(T)
+        ψ[n+1] = -(Yψ(w, n) * ψ[n] + Zψ(w, n) * ψ[n - 1]) / Xn
     end
 end
 
@@ -228,17 +225,14 @@ function f_to_max_m0!(w::AbstractWignerF{T}, nmid::Int, ψ::AbstractVector{T}) w
     ψ[nmid-1] = zero(T)
     for n in (nmid-1):-2:(w.nₘᵢₙ+1)
         Zn = Zψ(w, n)
-        if Zn == 0
-            ψ[n-1] = 0
-        else
-            ψ[n-1] = -(Yψ(w, n) * ψ[n] + Xψ(w, n) * ψ[n + 1]) / Zn
-        end
+        @assert abs(Zn) > zero(T)
+        ψ[n-1] = -(Yψ(w, n) * ψ[n] + Xψ(w, n) * ψ[n + 1]) / Zn
     end
 end
 
 
 """
-    classical_wigner3j_m0(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real}
+    classical_wigner3j_m0!(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real}
 
 Computes all allowed j₁ given fixed j₂, j₃, m₁, m₂, m₃, subject to m₁ + m₂ + m₃ = 0. This 
 applies the classical three-term recurrence relation and iterates two at a time, since in 
@@ -251,17 +245,7 @@ stability.
 - `j₂::Tn`: quantum number
 - `j₃::Tn`: quantum number
 - `m₂::Tn`: quantum number
-
-# Returns
-- `Tuple{Vector{Int}, Vector{T}}`: j₁ values and wigner symbols
 """
-function classical_wigner3j_m0(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real}
-    w = WignerF(j₂, j₃, m₂, m₃)
-    w3j = get_wigner_array(w)
-    classical_wigner3j_m0!(w, w3j)
-    return w3j
-end
-
 function classical_wigner3j_m0!(w::AbstractWignerF{T}, w3j::AbstractVector{T}) where T
     nmid = Int( (w.nₘᵢₙ + w.nₘₐₓ) / 2 )
     nmid = iseven(nmid) ? nmid : nmid + 1  # ensure start index is even

@@ -11,18 +11,39 @@ import WignerSymbols  # only a test-dep, for comparisons
     m₁ = -m₂ - m₃
     w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
     j_array = collect(eachindex(w3j))
-    for j in j_array
-        @test w3j[j] ≈ WignerSymbols.wigner3j(Float64, j, j₂, j₃, m₁, m₂)
+    reference = [WignerSymbols.wigner3j(Float64, j, j₂, j₃, m₁, m₂) for j in j_array]
+    
+    for (i, j) in enumerate(j_array)
+        @test w3j[j] ≈ reference[i]
+    end
+
+    # also test specifying different types
+    w3j = Float64.(wigner3j_f(BigFloat, j₂, j₃, m₂, m₃))
+    for (i, j) in enumerate(j_array)
+        @test w3j[j] ≈ reference[i]
+    end
+    w3j = wigner3j_f(j₂, j₃, m₂, m₃)
+    for (i, j) in enumerate(j_array)
+        @test w3j[j] ≈ reference[i]
+    end
+end
+##
+@testset "f: ∑mᵢ = 0 special case" begin
+    j₂, j₃, m₂, m₃ = 5000, 5002, 0, 0
+    w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
+    j_array = collect(eachindex(w3j))
+    for j in [j_array[i] for i in [collect(1:100)..., 5001, 7001, 10001-50, 10001]]
+        @test w3j[j] ≈ Float64(WignerSymbols.wigner3j(BigFloat, j, j₂, j₃, -m₂-m₃, m₂))
     end
 end
 
-@testset "f: ∑mᵢ = 0 special case" begin
-    j₂, j₃, m₂, m₃ = Int128.((5000, 5002, 0, 0))
+@testset "f: edge cases" begin
+    j₂, j₃, m₂, m₃ = 2, 2, 4, 4
     w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
-    j_array = collect(eachindex(w3j))
-    for j in [j_array[i] for i in [1, 2, 4, 6, lastindex(j_array)]]
-        @test w3j[j] ≈ Float64(WignerSymbols.wigner3j(BigFloat, j, j₂, j₃, -m₂-m₃, m₂))
-    end
+    @test length(w3j) == 0
+    j₂, j₃, m₂, m₃ = 2, 2, HalfInt(0.5), HalfInt(0.5)
+    w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
+    @test length(w3j) == 0
 end
 
 ## bottom of page 14 of Raynal et al. On the zeros of 3j coefficients: polynomial degree 
@@ -63,8 +84,13 @@ function confirm_symmetry(maxj)
 end
 
 @testset "Rasch & Yu c: Regge symmetry" begin
-    for i in 1:1000
-        c1, c2 = confirm_symmetry(1000)
+    for i in 1:2000
+        c1, c2 = confirm_symmetry(100)
         @test c1 == c2
     end
+end
+
+@testset "utils" begin
+    @test all(WignerFamilies.swap_triangular(1:6) .== [1,6,2,5,3,4])
+    @test all(WignerFamilies.swap_triangular(2:6) .== [2,6,3,5,4])
 end

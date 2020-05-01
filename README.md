@@ -12,9 +12,11 @@ This implements the methods described in [Luscombe and Luban 1998](https://journ
 using WignerFamilies
 
 # wigner3j for all j₁ fixing j₂=100, j₃=60, m₂=70, m₃=-55, m₁=-m₂-m₃
-j₁, w3j = nonclassical_wigner3j(100, 60, 70, -55)
+w3j = wigner3j_f(100, 60, 70, -55)  # outputs an OffsetArray for j₁'s nontrivial interval
+j_array = collect(eachindex(w3j))
 ```
 
 This generates Figure 1 of Luscombe and Luban 1998.
-
+<p align="center">
 ![example plot](examples/luscombe_and_luban_1998.svg)
+</p>

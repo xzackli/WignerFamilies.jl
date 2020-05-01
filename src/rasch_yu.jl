@@ -25,26 +25,6 @@ function ms_row_swap!(R::Array{T,2}, i, j) where T
     end
 end
 
-function ms_row_argmax(a::T,b::T,c::T) where T
-    if a ≥ b && a ≥ c
-        return 1
-    elseif b ≥ a && b ≥ c
-        return 2
-    else
-        return 3
-    end
-end
-
-function ms_row_argmin(a::T,b::T,c::T) where T
-    if a ≤ b && a ≤ c
-        return 1
-    elseif b ≤ a && b ≤ c
-        return 2
-    else
-        return 3
-    end
-end
-
 function SL_row_to_top!(R::Array{T,2}, S, L) where T
     if SL_in_row(R, S, L, 1)
         return
@@ -129,7 +109,7 @@ end
 
       
 """
-Evens out an array which scales linearly with difficulty by swapping elements such that
+Evens out an array which scales linearly with difficulty by interleaving elements such that
 [1,2,3,4,5,6] is mapped to [1,6,2,5,3,4].
 """
 function swap_triangular(arr)
