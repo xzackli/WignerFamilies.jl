@@ -17,6 +17,17 @@ end
 WignerF(j₂, j₃, m₂, m₃) = WignerF(Float64, j₂, j₃, m₂, m₃)
 
 
+"""
+    get_wigner_array(w::AbstractWigner{T}) where {T}
+
+Utility function for getting an OffsetArray with indices from jₘᵢₙ to jₘₐₓ.
+
+# Arguments
+- `w::AbstractWigner{T}`: contains the quantum numbers and dispatches on the kind of symbol
+
+# Returns
+- `OffsetArray{T}`: an array for wigner symbols
+"""
 get_wigner_array(w::AbstractWigner{T}) where {T} = OffsetArray(
     zeros(T, length(w.nₘᵢₙ:w.nₘₐₓ)), w.nₘᵢₙ:w.nₘₐₓ)
 
@@ -24,37 +35,47 @@ get_wigner_array(w::AbstractWigner{T}) where {T} = OffsetArray(
 """
     rψ!(w::AbstractWigner{T}, n::Integer, iterates::AbstractVector{T}) where T
 
-Backward recurrence scheme defined by equation 2 in Luscombe and Luban 1998. Generates 
-the ratio rψ(n) = ψ(n) / ψ(n+1) in the `iterates` vector.
+Backward recurrence scheme defined by equation 2 in Luscombe and Luban 1998. Iteratively
+generates the ratio rψ(n) = ψ(n) / ψ(n+1) in the `iterates` vector.
 
 # Arguments
 - `w::AbstractWigner{T}`: contains the quantum numbers and dispatches on the kind of symbol
-- `n::Integer`: current index of the recurrence
-- `iterates::AbstractVector{T}`: store the values of rψ here during recursion.
+- `nmid::Integer`: current index of the recurrence
+- `ψ::AbstractVector{T}`: store the values of rψ here during recursion.
 
 # Returns
-- `iterates[n]`: the value of rψ at the index `n`
+- `stop::Int`: the index the iteration stopped
 """
-function rψ!(w::AbstractWigner{T}, n::Integer, iterates::AbstractVector{T}) where T
-    if n == w.nₘₐₓ
-        iterates[n] = -Zψ(w, n) / Yψ(w, n)
-        return iterates[n]
+function rψ!(w::AbstractWigner{T}, nmid::Integer, ψ::AbstractVector{T}) where T
+    stop = 0
+    for n in w.nₘₐₓ:-1:nmid
+        if n == w.nₘₐₓ
+            ψ[n] = -Zψ(w, n) / Yψ(w, n)
+        else
+            ψ[n] = -Zψ(w, n) / (Yψ(w, n) + Xψ(w, n) * ψ[n+1])
+        end
+        if ψ[n] == 0 || abs(ψ[n]) ≥ 1.0
+            stop = n
+            # break
+        end
     end
-    @assert n < w.nₘₐₓ
-    t = rψ!(w, n + 1, iterates)
-    iterates[n] = -Zψ(w, n) / (Yψ(w, n) + Xψ(w, n) * t)
-    return iterates[n] 
+    return stop
 end
 
-function sψ!(w::AbstractWigner{T}, n::Integer, iterates::AbstractVector{T}) where T
-    if n == w.nₘᵢₙ
-        iterates[n] = -Xψ(w, n) / Yψ(w, n)
-        return iterates[n]
+function sψ!(w::AbstractWigner{T}, nmid::Integer, ψ::AbstractVector{T}) where T
+    stop = 0
+    for n in w.nₘᵢₙ:nmid
+        if n == w.nₘᵢₙ
+            ψ[n] = -Xψ(w, n) / Yψ(w, n)
+        else
+            ψ[n] = -Xψ(w, n) / (Yψ(w, n) + Zψ(w, n) * ψ[n-1])
+        end
+        if ψ[n] == 0 || abs(ψ[n]) ≥ 1.0
+            stop = n
+            # break
+        end
     end
-    @assert n > w.nₘᵢₙ
-    t = sψ!(w, n - 1, iterates)
-    iterates[n] = -Xψ(w, n) / (Yψ(w, n) + Zψ(w, n) * t)
-    return iterates[n]
+    return stop
 end
 
 A(w::AbstractWignerF, j) = sqrt((j^2 - (w.j₂ - w.j₃)^2) * 
