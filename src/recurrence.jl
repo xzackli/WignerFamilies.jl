@@ -53,46 +53,56 @@ function rψ!(w::AbstractWigner{T}, nmid::Integer, ψ::AbstractVector{T}) where 
         else
             ψ[n] = -Zψ(w, n) / (Yψ(w, n) + Xψ(w, n) * ψ[n+1])
         end
-        # if !isfinite(ψ[n])
-        #     ψ[n] = zero(T)
-        #     return n
-        # end
-        # if ψ[n] == 0 || abs(ψ[n]) ≥ 1.0 
-        #     return n
-        # end
+        if !isfinite(ψ[n])
+            ψ[n] = zero(T)
+            return n
+        end
+        if abs(ψ[n]) ≥ 1.0 
+            return n
+        end
     end
     return nmid
 end
 
 function sψ!(w::AbstractWigner{T}, nmid::Integer, ψ::AbstractVector{T}) where T
     for n in w.nₘᵢₙ:nmid
-        if n == w.nₘᵢₙ
+        if n == w.nₘᵢₙ       
             ψ[n] = -Xψ(w, n) / Yψ(w, n)
         else
             ψ[n] = -Xψ(w, n) / (Yψ(w, n) + Zψ(w, n) * ψ[n-1])
         end
-        # if !isfinite(ψ[n])
-        #     ψ[n] = zero(T)
-        #     return n
-        # end
-        # if ψ[n] == zero(T) || abs(ψ[n]) ≥ one(T)
-        #     return n
-        # end
+        if !isfinite(ψ[n])
+            ψ[n] = zero(T)
+            return n
+        end
+        if abs(ψ[n]) ≥ one(T)
+            return n
+        end
     end
     return nmid
 end
 
 
 """
-Special case iteration for mᵢ=0.
+Three-term recurrence relation for the classical region.
 """
 function ψauxplus!(w::AbstractWignerF{T}, 
                    n₋::Int, nc::Int, ψ::AbstractVector{T}) where {T}
-
-    for n in (n₋):2:(w.nₘₐₓ-1)
+    start_index = n₋
+    if n₋ == w.nₘᵢₙ
+        ψ[w.nₘᵢₙ] = one(T)  # set an arbitrary value for this
+        if iszero(w.nₘᵢₙ)
+            ψ[w.nₘᵢₙ+1] = -(w.m₃-w.m₂+2B(w,w.nₘᵢₙ)) / A(w,1)
+        else
+            ψ[w.nₘᵢₙ+1] = -(B(w,w.nₘᵢₙ+1)) / (w.nₘᵢₙ* A(w, w.nₘᵢₙ+1))
+        end
+        start_index = w.nₘᵢₙ+1
+    end
+    
+    for n in start_index:(nc-1)
         Xn = Xψ(w, n)
-        if Xn == 0
-            ψ[n+1] = 0
+        if iszero(Xn)
+            ψ[n+1] = zero(T)
         else
             ψ[n+1] = -(Yψ(w, n) * ψ[n] + Zψ(w, n) * ψ[n - 1]) / Xn
         end
@@ -115,7 +125,7 @@ function normalization(w::AbstractWignerF{T}, ψ₀::AbstractVector{T}) where T
     end
     return sqrt(abs(norm))
 end
-f_jmax_sgn(w::AbstractWignerF) = iseven(Int(w.j₂ + w.j₃ + w.m₂ + w.m₃)) ? 1 : -1
+f_jmax_sgn(w::AbstractWignerF) = iseven(Int(w.j₂ - w.j₃ + w.m₂ + w.m₃)) ? 1 : -1
 
 struct WignerH{T} <: AbstractWignerH{T}
     j₂::T
