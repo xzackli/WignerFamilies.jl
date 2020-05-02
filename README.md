@@ -6,7 +6,7 @@
 <!-- ![Lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg) -->
 <!-- [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://xzackli.github.io/WignerFamilies.jl/stable) -->
 
-This implements the methods described in [Luscombe and Luban 1998](https://journals.aps.org/pre/abstract/10.1103/PhysRevE.57.7274), based on the work of [Schulten and Gordon 1961](https://aip.scitation.org/doi/10.1063/1.522426), for generating families of Wigner 3j and 6j symbols by recurrence relation. It also contains code implementing the magic square methods for Wigner 3j symbols in [Rasch and Yu 2012](https://epubs.siam.org/doi/abs/10.1137/S1064827503422932).
+This package implements methods described in [Luscombe and Luban 1998](https://journals.aps.org/pre/abstract/10.1103/PhysRevE.57.7274), based on the work of [Schulten and Gordon 1961](https://aip.scitation.org/doi/10.1063/1.522426), for generating families of Wigner 3j and 6j symbols by recurrence relation. It also contains code implementing the magic square methods for efficiently storing Wigner 3j symbols in [Rasch and Yu 2012](https://epubs.siam.org/doi/abs/10.1137/S1064827503422932).
 
 ## Installation
 
@@ -24,7 +24,8 @@ quantum numbers fixed, in the family of symbols,
 </p>
 
 It returns a simple wrapper around a vector, `WignerSymbolVector` which is indexed by the 
-quantum number `j`.
+quantum number `j`. This type supports half-integer quantum numbers as indices through the
+package [HalfIntegers.jl](https://github.com/sostock/HalfIntegers.jl).
 
 ```julia
 using WignerFamilies
@@ -39,3 +40,4 @@ This generates the symbols in Figure 1 of Luscombe and Luban 1998.
 <p align="center">
 <img width=90% src="docs/src/assets/luscombe_and_luban_1998.svg">
 </p>
+
