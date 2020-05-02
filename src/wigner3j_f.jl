@@ -246,7 +246,7 @@ end
 """
     classical_wigner3j_m0!(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real}
 
-Computes all allowed j₁ given fixed j₂, j₃, m₁, m₂, m₃, subject to m₁ + m₂ + m₃ = 0. This 
+Computes all allowed j₁ given fixed j₂, j₃, m₁, m₂, m₃, subject to m₁ = m₂ = m₃ = 0. This 
 applies the classical three-term recurrence relation and iterates two at a time, since in 
 this special case all symbols with odd ∑jᵢ are zero. Unlike other Wigner symbols, this 
 special case requires iterating outwards, as one must recur towards increasing |fⱼ| for 
