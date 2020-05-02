@@ -1,18 +1,24 @@
 
-abstract type AbstractWigner{T<:Real} end
-abstract type AbstractWignerF{T} <: AbstractWigner{T} end
-abstract type AbstractWignerH{T} <: AbstractWigner{T} end
-
-struct WignerF{T} <: AbstractWignerF{T}
+# the result arrays are indexed by type Ti and have type T
+struct WignerF{T<:Real, Ti} <: AbstractWignerF{T, Ti}
     j₂::T
     j₃::T
     m₂::T
     m₃::T
-    nₘᵢₙ::Int
-    nₘₐₓ::Int
+    nₘᵢₙ::Ti
+    nₘₐₓ::Ti
 end
-function WignerF(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real}
-    WignerF{T}(j₂, j₃, m₂, m₃, max(abs(j₂ - j₃), abs(m₂ + m₃)), j₂ + j₃)
+function WignerF(::Type{T}, j₂::Ti, j₃::Ti, m₂::Ti, m₃::Ti) where {T<:Real, Ti}
+    WignerF{T, Ti}(j₂, j₃, m₂, m₃, max(abs(j₂ - j₃), abs(m₂ + m₃)), j₂ + j₃)
+end
+function WignerF(::Type{T}, j₂, j₃, m₂, m₃) where {T}
+    nₘᵢₙ = max(abs(j₂ - j₃), abs(m₂ + m₃))
+    nₘₐₓ = j₂ + j₃
+    if isinteger(nₘᵢₙ) && isinteger(nₘₐₓ)
+        return WignerF{T, Int}(j₂, j₃, m₂, m₃, nₘᵢₙ, nₘₐₓ)
+    else
+        return WignerF{T, HalfInt}(j₂, j₃, m₂, m₃, nₘᵢₙ, nₘₐₓ)
+    end
 end
 WignerF(j₂, j₃, m₂, m₃) = WignerF(Float64, j₂, j₃, m₂, m₃)
 
@@ -28,8 +34,8 @@ Utility function for getting an OffsetArray with indices from jₘᵢₙ to jₘ
 # Returns
 - `OffsetArray{T}`: an array for wigner symbols
 """
-get_wigner_array(w::AbstractWigner{T}) where {T} = OffsetArray(
-    zeros(T, length(w.nₘᵢₙ:w.nₘₐₓ)), w.nₘᵢₙ:w.nₘₐₓ)
+get_wigner_array(w::AbstractWigner{T,Ti}) where {T,Ti} = (
+    WignerSymbolVector(zeros(T, length(w.nₘᵢₙ:w.nₘₐₓ)), w.nₘᵢₙ:w.nₘₐₓ))
 
 
 """
@@ -46,7 +52,7 @@ generates the ratio rψ(n) = ψ(n) / ψ(n+1) in the `iterates` vector.
 # Returns
 - `stop::Int`: the index the iteration stopped
 """
-function rψ!(w::AbstractWigner{T}, nmid::Integer, ψ::AbstractVector{T}) where T
+function rψ!(w::AbstractWigner{T,Ti}, nmid::Ti, ψ::AbstractVector{T}) where {T,Ti}
     for n in w.nₘₐₓ:-1:nmid
         if n == w.nₘₐₓ
             ψ[n] = -Zψ(w, n) / Yψ(w, n)
@@ -64,7 +70,7 @@ function rψ!(w::AbstractWigner{T}, nmid::Integer, ψ::AbstractVector{T}) where 
     return nmid
 end
 
-function sψ!(w::AbstractWigner{T}, nmid::Integer, ψ::AbstractVector{T}) where T
+function sψ!(w::AbstractWigner{T,Ti}, nmid::Ti, ψ::AbstractVector{T}) where {T,Ti}
     for n in w.nₘᵢₙ:nmid
         if n == w.nₘᵢₙ       
             ψ[n] = -Xψ(w, n) / Yψ(w, n)
@@ -86,8 +92,8 @@ end
 """
 Three-term recurrence relation for the classical region.
 """
-function ψauxplus!(w::AbstractWignerF{T}, 
-                   n₋::Int, nc::Int, ψ::AbstractVector{T}) where {T}
+function ψauxplus!(w::AbstractWignerF{T, Ti}, 
+                   n₋::Ti, nc::Ti, ψ::AbstractVector{T}) where {T, Ti}
     start_index = n₋
     if n₋ == w.nₘᵢₙ
         ψ[w.nₘᵢₙ] = one(T)  # set an arbitrary value for this
@@ -164,7 +170,7 @@ function wigner3j_f(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real}
 end
 wigner3j_f(j₂, j₃, m₂, m₃) = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
 
-function wigner3j_f!(w::AbstractWignerF{T}, w3j::AbstractVector{T}) where T
+function wigner3j_f!(w::AbstractWignerF{T,Ti}, w3j::AbstractVector{T}) where {T,Ti}
 
     # special case that performs an outwards classical solution if m₁ = m₂ = m₃ = 0
     # and skips the symbols with odd ∑jᵢ since those are zero.
@@ -172,7 +178,7 @@ function wigner3j_f!(w::AbstractWignerF{T}, w3j::AbstractVector{T}) where T
         return classical_wigner3j_m0!(w, w3j)
     end
 
-    nmid = Int(ceil((w.nₘᵢₙ + w.nₘₐₓ)/2))
+    nmid = Ti(ceil((w.nₘᵢₙ + w.nₘₐₓ)/2))
     # attempt the non-classical two term nonlinear recurrences
     n₊ = rψ!(w, nmid, w3j) 
     n₋ = sψ!(w, nmid, w3j)
@@ -197,17 +203,18 @@ function wigner3j_f!(w::AbstractWignerF{T}, w3j::AbstractVector{T}) where T
     end
     # normalize the results
     norm = normalization(w, w3j)
-    w3j ./= norm
+    w3j.symbols ./= norm
     if sign(w3j[w.nₘₐₓ]) != f_jmax_sgn(w)
-        w3j .*= -1
+        w3j.symbols .*= -1
     end
 end
 
 
 """
-Special case iteration for mᵢ=0.
+Special case iteration for mᵢ=0. In this case, j₁ must be an integer too, so the index
+type is restricted to Int.
 """
-function f_to_min_m0!(w::AbstractWignerF{T}, 
+function f_to_min_m0!(w::AbstractWignerF{T, Int}, 
                       nmid::Int, ψ::AbstractVector{T}) where {T}
     @assert iseven(nmid)
     ψ[nmid] = one(T)
@@ -219,7 +226,8 @@ function f_to_min_m0!(w::AbstractWignerF{T},
     end
 end
 
-function f_to_max_m0!(w::AbstractWignerF{T}, nmid::Int, ψ::AbstractVector{T}) where {T}
+function f_to_max_m0!(w::AbstractWignerF{T, Int}, 
+                      nmid::Int, ψ::AbstractVector{T}) where {T}
     @assert iseven(nmid)
     ψ[nmid] = one(T)
     ψ[nmid-1] = zero(T)
@@ -246,18 +254,17 @@ stability.
 - `j₃::Tn`: quantum number
 - `m₂::Tn`: quantum number
 """
-function classical_wigner3j_m0!(w::AbstractWignerF{T}, w3j::AbstractVector{T}) where T
+function classical_wigner3j_m0!(w::AbstractWignerF{T,Int}, w3j::AbstractVector{T}) where T
     nmid = Int( (w.nₘᵢₙ + w.nₘₐₓ) / 2 )
     nmid = iseven(nmid) ? nmid : nmid + 1  # ensure start index is even
     f_to_min_m0!(w, nmid, w3j)
     f_to_max_m0!(w, nmid, w3j)
     norm = normalization(w, w3j)
-    w3j ./= norm
+    w3j.symbols ./= norm
     if sign(w3j[w.nₘₐₓ]) != f_jmax_sgn(w)
-        w3j .*= -1
+        w3j.symbols .*= -1
     end
 end
-
 
 
 ## ----- todo: 6j
@@ -285,4 +292,3 @@ end
 # Xψ(w::AbstractWignerH, j) = j * E(w, j+1)
 # Yψ(w::AbstractWignerH, j) = F(w, j)
 # Zψ(w::AbstractWignerH, j)= (j+1) * E(w, j)
-

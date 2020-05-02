@@ -16,13 +16,13 @@ Pkg.add("git@github.com:xzackli/WignerFamilies.jl.git")
 ```
 
 ## Usage
-WignerFamilies.jl currently implements Wigner symbols varying j₁ and keeping the other quantum numbers fixed,
+WignerFamilies.jl currently implements 3j symbols whic vary j and fix the other quantum numbers,
 
 <p align="center">
 <img width=40% src="docs/src/assets/fsymbol.png">
 </p>
 
-It outputs an `OffsetArray` where the index corresponds to the j₁ value.
+It outputs an `OffsetArray` where the index corresponds to the j value.
 
 ```julia
 using WignerFamilies
