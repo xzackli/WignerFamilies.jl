@@ -1,7 +1,5 @@
 
-
-using Base: Indices, tail, @propagate_inbounds
-using Base: IdentityUnitRange
+using Base: @propagate_inbounds
 using CustomUnitRanges: filename_for_urange
 include(filename_for_urange)
 
