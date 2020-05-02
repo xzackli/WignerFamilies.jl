@@ -24,7 +24,8 @@ quantum numbers fixed, in the family of symbols,
 </p>
 
 It exposes `wigner3j_f(j₂, j₃, m₂, m₃)` which returns a simple wrapper around a vector of 
-the type`WignerSymbolVector`, is indexed by the quantum number `j`. This type supports 
+the type`WignerSymbolVector`. This vector contains the computed symbols, indexed by the 
+quantum number `j`. The type supports 
 [half-integer](https://github.com/sostock/HalfIntegers.jl) quantum numbers as indices.
 
 ```julia
