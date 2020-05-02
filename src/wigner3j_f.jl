@@ -195,11 +195,15 @@ function wigner3j_f!(w::AbstractWignerF{T,Ti}, w3j::AbstractVector{T}) where {T,
     # rescale the three parts
     if n₋ > w.nₘᵢₙ
         scale_middle = ψn₋ / w3j[n₋]
-        w3j[w.nₘᵢₙ:(n₋+1)] .*= scale_middle
+        for j in w.nₘᵢₙ:(n₋+1)
+            w3j[j] *= scale_middle
+        end
     end
     if n₊ < w.nₘₐₓ
         scale_end = w3j[n₊] / ψn₊
-        w3j[(n₊+1):w.nₘₐₓ] .*= scale_end
+        for j in (n₊+1):w.nₘₐₓ
+            w3j[j] *= scale_end
+        end
     end
     # normalize the results
     norm = normalization(w, w3j)

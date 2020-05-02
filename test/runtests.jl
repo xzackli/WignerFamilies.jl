@@ -59,8 +59,7 @@ end
         for n_seq in 0:1
             j₂, j₃, m₂, m₃ = (2X(n_seq)+1)/6, (X(n_seq)+2)/6, HalfInt(3/2), HalfInt(3/2)
             w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
-            j_array = collect(eachindex(w3j))
-            for j in j_array
+            for j in eachindex(w3j)
                 @test (abs(w3j[j] - 
                     Float64(WignerSymbols.wigner3j(BigFloat, j, j₂, j₃, -m₂-m₃, m₂))) < tol)
             end

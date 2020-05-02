@@ -1,3 +1,7 @@
+"""
+This relatively light array wrapper allows us to access arrays with the quantum number 
+as the index, which means we can just type in the equations from the papers.
+"""
 
 using Base: @propagate_inbounds
 using CustomUnitRanges: filename_for_urange
