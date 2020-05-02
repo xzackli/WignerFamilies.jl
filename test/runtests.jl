@@ -18,7 +18,7 @@ import WignerSymbols  # only a test-dep, for comparisons
     end
 
     # also test specifying different types
-    w3j = Float64.(wigner3j_f(BigFloat, j₂, j₃, m₂, m₃))
+    w3j = wigner3j_f(BigFloat, j₂, j₃, m₂, m₃)
     for (i, j) in enumerate(j_array)
         @test w3j[j] ≈ reference[i]
     end
@@ -27,6 +27,7 @@ import WignerSymbols  # only a test-dep, for comparisons
         @test w3j[j] ≈ reference[i]
     end
 end
+
 ##
 @testset "f: mᵢ = 0 special case" begin
     j₂, j₃, m₂, m₃ = 5000, 5002, 0, 0
