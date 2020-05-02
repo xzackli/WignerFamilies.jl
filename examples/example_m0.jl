@@ -9,7 +9,7 @@ w3j = get_wigner_array(w)
 
 ##
 plt.clf()
-plot(js, Float64.(w3j))
+plot(js, Float64.(w3j.symbols))
 using WignerSymbols
 plt.plot(js, 
     [Float64(wigner3j(BigFloat, n, j₂, j₃, 0, 0)) for n in js], alpha=0.5)
@@ -20,13 +20,10 @@ plt.gcf()
 plt.clf()
 js = collect(w.nₘᵢₙ:w.nₘₐₓ)
 using WignerSymbols
-exact = OffsetArray([wigner3j(Float64, n, w.j₂, w.j₃, 0, 0) for n in js], w.nₘᵢₙ:w.nₘₐₓ)
-
-plt.plot(Float64.(exact .- w3j))
-# plt.plot(js, 
-#     , alpha=0.5)
+exact = [wigner3j(Float64, n, w.j₂, w.j₃, 0, 0) for n in js]
+plt.plot(Float64.(exact .- w3j.symbols))
 plt.gcf()
 
 using Test
-@test isapprox(exact, w3j)
+@test isapprox(exact, w3j.symbols)
 

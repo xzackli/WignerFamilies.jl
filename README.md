@@ -16,23 +16,26 @@ Pkg.add("git@github.com:xzackli/WignerFamilies.jl.git")
 ```
 
 ## Usage
-WignerFamilies.jl currently implements 3j symbols whic vary j and fix the other quantum numbers,
+WignerFamilies.jl currently computes the nontrivial 3j symbols over `j`, with the other 
+quantum numbers fixed, in the family of symbols,
 
 <p align="center">
 <img width=40% src="docs/src/assets/fsymbol.png">
 </p>
 
-It outputs an `OffsetArray` where the index corresponds to the j value.
+It returns a simple wrapper around a vector, `WignerSymbolVector` which is indexed by the 
+quantum number `j`.
 
 ```julia
 using WignerFamilies
 
 # wigner3j for all j₁ fixing j₂=100, j₃=60, m₂=70, m₃=-55, m₁=-m₂-m₃
-w3j = wigner3j_f(100, 60, 70, -55)  # outputs an OffsetArray for j₁'s nontrivial interval
-j_array = collect(eachindex(w3j))
+w3j = wigner3j_f(100, 60, 70, -55)  # you can get the underling array with w3j.symbols
+js = collect(eachindex(w3j))
+plot(js, w3j.symbols)
 ```
 
-This generates Figure 1 of Luscombe and Luban 1998.
+This generates the symbols in Figure 1 of Luscombe and Luban 1998.
 <p align="center">
 <img width=90% src="docs/src/assets/luscombe_and_luban_1998.svg">
 </p>
