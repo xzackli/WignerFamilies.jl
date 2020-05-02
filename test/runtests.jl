@@ -67,6 +67,20 @@ end
         end
     end
 end
+##
+@testset "f: half-integer spin" begin
+
+    w = WignerF( HalfInt(5/2), 5, HalfInt(1/2), HalfInt(-1) )
+    m₁ = -w.m₂ - w.m₃
+    w3j = get_wigner_array(w)
+    wigner3j_f!(w, w3j)
+    
+    reference = [WignerSymbols.wigner3j(Float64, j, w.j₂, w.j₃, m₁, w.m₂) 
+                 for j in eachindex(w3j)]
+    for (i, j) in enumerate(eachindex(w3j))
+        @test w3j[j] ≈ reference[i]
+    end
+end
 
 ## tests for the Rasch and Yu c index
 function confirm_symmetry(maxj)

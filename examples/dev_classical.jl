@@ -3,7 +3,7 @@ using PyPlot
 using OffsetArrays
 using BenchmarkTools
 
-w = WignerF(Float64, 2000, 2000, 0, 0)
+w = WignerF(Float64, 4000, 4000, 0, 0)
 w3j = get_wigner_array(w)
 
 function test(w_, w3j_)

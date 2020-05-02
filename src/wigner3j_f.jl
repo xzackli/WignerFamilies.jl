@@ -14,11 +14,11 @@ end
 function WignerF(::Type{T}, j₂, j₃, m₂, m₃) where {T}
     nₘᵢₙ = max(abs(j₂ - j₃), abs(m₂ + m₃))
     nₘₐₓ = j₂ + j₃
-    if isinteger(nₘᵢₙ) && isinteger(nₘₐₓ)
-        return WignerF{T, Int}(j₂, j₃, m₂, m₃, nₘᵢₙ, nₘₐₓ)
-    else
-        return WignerF{T, HalfInt}(j₂, j₃, m₂, m₃, nₘᵢₙ, nₘₐₓ)
-    end
+    # if isinteger(nₘᵢₙ) && isinteger(nₘₐₓ)
+    #     return WignerF{T, Int}(j₂, j₃, m₂, m₃, nₘᵢₙ, nₘₐₓ)
+    # else
+    return WignerF{T, HalfInt}(j₂, j₃, m₂, m₃, nₘᵢₙ, nₘₐₓ)  # better to just be type stable
+    # end
 end
 WignerF(j₂, j₃, m₂, m₃) = WignerF(Float64, j₂, j₃, m₂, m₃)
 
