@@ -76,7 +76,7 @@ end
 
 function regge_variables!(R::Array{TR,2}, 
                           j₁, j₂, j₃, 
-                          m₁, m₂, m₃) where {TR, Tint}
+                          m₁, m₂, m₃) where {TR}
     R[1,1] = -j₁+j₂+j₃
     R[1,2] = j₁-j₂+j₃
     R[1,3] = j₁+j₂-j₃

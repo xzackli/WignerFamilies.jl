@@ -83,5 +83,5 @@ plt.gcf()
 ##
 w = WignerF(BigFloat, 100, 100, 0, 0)
 w3j = get_wigner_array(w)
-@time classical_wigner3j_m0!(w, w3j)
+@time WignerFamilies.classical_wigner3j_m0!(w, w3j)
 ##

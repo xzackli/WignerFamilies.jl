@@ -18,7 +18,7 @@ end
 
 function test2(w_, w3j_)
     for i in 1:2000
-        classical_wigner3j_m0!(w_, w3j_)
+        WignerFamilies.classical_wigner3j_m0!(w_, w3j_)
     end
 end
 
