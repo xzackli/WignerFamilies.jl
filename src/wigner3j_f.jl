@@ -172,6 +172,7 @@ wigner3j_f(j₂, j₃, m₂, m₃) = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
 
 function wigner3j_f!(w::AbstractWignerF{T,Ti}, w3j::AbstractVector{T}) where {T,Ti}
 
+    fill!(w3j.symbols, zero(T))
     # special case that performs an outwards classical solution if m₁ = m₂ = m₃ = 0
     # and skips the symbols with odd ∑jᵢ since those are zero.
     if iszero(w.m₂) && iszero(w.m₃)

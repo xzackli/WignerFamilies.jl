@@ -1,12 +1,12 @@
 using WignerFamilies
 using PyPlot 
-using OffsetArrays
 
-j₂, j₃, m₂, m₃ = 100, 60, 0, 0
+j₂, j₃, m₂, m₃ = 2, 2, 0, 0
 w = WignerF(Float64, j₂, j₃, m₂, m₃)
 w3j = get_wigner_array(w)
 @allocated WignerFamilies.classical_wigner3j_m0!(w, w3j)
 j_array = collect(eachindex(w3j))
+w3j
 ##
 plt.clf()
 plot(j_array, Float64.(w3j.symbols))

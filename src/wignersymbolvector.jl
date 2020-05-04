@@ -55,7 +55,7 @@ Base.axes1(A::WignerSymbolVector{T,Ti,AA}) where {T, Ti, AA} = URange{Ti}(1+A.of
 
 Base.dataids(A::WignerSymbolVector) = Base.dataids(parent(A))
 
-function Base.show(io::IO, ::MIME"text/plain", a::WignerSymbolVector)
+function Base.show(io::IO, a::WignerSymbolVector)
     print(io, "$(length(a))-element WignerSymbolVector (")
     println(io, eltype(a), ") over ", Base.axes1(a))
     Base.print_array(io, parent(a))
