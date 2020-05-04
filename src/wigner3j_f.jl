@@ -172,13 +172,25 @@ wigner3j_f(j₂, j₃, m₂, m₃) = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
 
 function wigner3j_f!(w::AbstractWignerF{T,Ti}, w3j::AbstractVector{T}) where {T,Ti}
 
+    # special case, if it's just one nontrivial result
+    if length(w3j) == 1
+        w3j[w.nₘᵢₙ] = f_jmax_sgn(w) / sqrt(w.nₘᵢₙ + w.j₂ + w.j₃+1)
+        return
+    end
+
+    nmid = Int( (w.nₘᵢₙ + w.nₘₐₓ) / 2 )
     fill!(w3j.symbols, zero(T))
+
     # special case that performs an outwards classical solution if m₁ = m₂ = m₃ = 0
     # and skips the symbols with odd ∑jᵢ since those are zero.
     if iszero(w.m₂) && iszero(w.m₃)
-        return classical_wigner3j_m0!(w, w3j)
+        nmid_even = iseven(nmid) ? nmid : nmid + 1  # ensure start index is even
+        if w.nₘᵢₙ < nmid_even < w.nₘₐₓ  # check to make sure it's not the ends
+            return classical_wigner3j_m0!(w, w3j)
+        end
     end
 
+    # otherwise attempt the general solution
     nmid = Ti(ceil((w.nₘᵢₙ + w.nₘₐₓ)/2))
     # attempt the non-classical two term nonlinear recurrences
     n₊ = rψ!(w, nmid, w3j) 
