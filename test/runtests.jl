@@ -45,6 +45,10 @@ end
     j₂, j₃, m₂, m₃ = 2, 2, HalfInt(0.5), HalfInt(0.5)
     w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
     @test length(w3j) == 0
+    
+    @test wigner3j_f(Float64, 1, 0, 0, 0)[1] ≈ -sqrt(1/3)
+    @test wigner3j_f(Float64, 0, 0, 0, 0)[0] ≈ 1.0
+    @test wigner3j_f(Float64, 1, 1, 0, 0)[2] ≈ sqrt(2/15)
 end
 
 ## bottom of page 14 of Raynal et al. On the zeros of 3j coefficients: polynomial degree 

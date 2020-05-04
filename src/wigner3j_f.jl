@@ -178,12 +178,12 @@ function wigner3j_f!(w::AbstractWignerF{T,Ti}, w3j::AbstractVector{T}) where {T,
         return
     end
 
-    nmid = Int( (w.nₘᵢₙ + w.nₘₐₓ) / 2 )
+    nmid = Ti( (w.nₘᵢₙ + w.nₘₐₓ) / 2 )
     fill!(w3j.symbols, zero(T))
 
     # special case that performs an outwards classical solution if m₁ = m₂ = m₃ = 0
     # and skips the symbols with odd ∑jᵢ since those are zero.
-    if iszero(w.m₂) && iszero(w.m₃)
+    if iszero(w.m₂) && iszero(w.m₃) && isinteger(nmid)
         nmid_even = iseven(nmid) ? nmid : nmid + 1  # ensure start index is even
         if w.nₘᵢₙ < nmid_even < w.nₘₐₓ  # check to make sure it's not the ends
             return classical_wigner3j_m0!(w, w3j)
