@@ -12,11 +12,11 @@ This package implements methods described in [Luscombe and Luban 1998](https://j
 
 ```julia
 using Pkg
-Pkg.add("git@github.com:xzackli/WignerFamilies.jl.git")
+Pkg.add("WignerFamilies")
 ```
 
 ## Usage
-WignerFamilies.jl currently computes the nontrivial 3j symbols over `j`, with the other 
+WignerFamilies.jl currently computes the nontrivial 3j symbols over `j` with the other 
 quantum numbers fixed, in the family of symbols,
 
 <p align="center">
@@ -31,7 +31,7 @@ quantum number `j`. The type supports
 ```julia
 using WignerFamilies
 
-# wigner3j for all j₁ fixing j₂=100, j₃=60, m₂=70, m₃=-55, m₁=-m₂-m₃
+# wigner3j for all j fixing j₂=100, j₃=60, m₂=70, m₃=-55, m₁=-m₂-m₃
 w3j = wigner3j_f(100, 60, 70, -55) 
 js = collect(eachindex(w3j))  # indices are the quantum numbers
 plot(js, w3j.symbols)   # you can get the underling array with w3j.symbols
