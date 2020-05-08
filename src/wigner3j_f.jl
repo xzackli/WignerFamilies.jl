@@ -220,11 +220,11 @@ function wigner3j_f!(w::AbstractWignerF{T,Ti}, w3j::AbstractVector{T}) where {T,
     end
     # normalize the results
     norm = one(T) / normalization(w, w3j)
+    if sign(w3j[w.nₘₐₓ]) != f_jmax_sgn(w)
+        norm *= -1
+    end
     symbols = parent(w3j)
     symbols .*= norm
-    if sign(w3j[w.nₘₐₓ]) != f_jmax_sgn(w)
-        symbols .*= -1
-    end
 end
 
 
@@ -279,11 +279,11 @@ function classical_wigner3j_m0!(w::AbstractWignerF{T,Int}, w3j::AbstractVector{T
     f_to_max_m0!(w, nmid, w3j)
     
     norm = one(T) / normalization(w, w3j)
+    if sign(w3j[w.nₘₐₓ]) != f_jmax_sgn(w)
+        norm *= -1
+    end
     symbols = parent(w3j)
     symbols .*= norm
-    if sign(w3j[w.nₘₐₓ]) != f_jmax_sgn(w)
-        symbols .*= -1
-    end
 end
 
 
