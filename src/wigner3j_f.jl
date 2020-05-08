@@ -179,7 +179,7 @@ function wigner3j_f!(w::AbstractWignerF{T,Ti}, w3j::AbstractVector{T}) where {T,
     end
 
     nmid = Ti( (w.nₘᵢₙ + w.nₘₐₓ) / 2 )
-    fill!(w3j.symbols, zero(T))
+    fill!(parent(w3j), zero(T))
 
     # special case that performs an outwards classical solution if m₁ = m₂ = m₃ = 0
     # and skips the symbols with odd ∑jᵢ since those are zero.
@@ -219,10 +219,11 @@ function wigner3j_f!(w::AbstractWignerF{T,Ti}, w3j::AbstractVector{T}) where {T,
         end
     end
     # normalize the results
-    norm = normalization(w, w3j)
-    w3j.symbols ./= norm
+    norm = one(T) / normalization(w, w3j)
+    symbols = parent(w3j)
+    symbols .*= norm
     if sign(w3j[w.nₘₐₓ]) != f_jmax_sgn(w)
-        w3j.symbols .*= -1
+        symbols .*= -1
     end
 end
 
@@ -276,10 +277,12 @@ function classical_wigner3j_m0!(w::AbstractWignerF{T,Int}, w3j::AbstractVector{T
     nmid = iseven(nmid) ? nmid : nmid + 1  # ensure start index is even
     f_to_min_m0!(w, nmid, w3j)
     f_to_max_m0!(w, nmid, w3j)
-    norm = normalization(w, w3j)
-    w3j.symbols ./= norm
+    
+    norm = one(T) / normalization(w, w3j)
+    symbols = parent(w3j)
+    symbols .*= norm
     if sign(w3j[w.nₘₐₓ]) != f_jmax_sgn(w)
-        w3j.symbols .*= -1
+        symbols .*= -1
     end
 end
 
