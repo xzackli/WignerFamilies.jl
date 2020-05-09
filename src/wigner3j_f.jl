@@ -184,8 +184,9 @@ function wigner3j_f!(w::AbstractWignerF{T,Ti}, w3j::AbstractVector{T}) where {T,
     # special case that performs an outwards classical solution if m₁ = m₂ = m₃ = 0
     # and skips the symbols with odd ∑jᵢ since those are zero.
     if iszero(w.m₂) && iszero(w.m₃) && isinteger(nmid)
-        nmid_even = iseven(nmid) ? nmid : nmid + 1  # ensure start index is even
-        if w.nₘᵢₙ < nmid_even < w.nₘₐₓ  # check to make sure it's not the ends
+        nmid = Int(floor((w.nₘᵢₙ + w.nₘₐₓ) / 2 ))
+        nmid = iseven(nmid - w.nₘᵢₙ) ? nmid : nmid + 1  # ensure start index is even
+        if w.nₘᵢₙ < nmid < w.nₘₐₓ  # check to make sure it's not the ends
             return classical_wigner3j_m0!(w, w3j)
         end
     end
@@ -271,8 +272,8 @@ stability.
 - `m₂::Tn`: quantum number
 """
 function classical_wigner3j_m0!(w::AbstractWignerF{T,Int}, w3j::AbstractVector{T}) where T
-    nmid = Int( (w.nₘᵢₙ + w.nₘₐₓ) / 2 )
-    nmid = iseven(nmid) ? nmid : nmid  # ensure start index is even
+    nmid = Int(floor((w.nₘᵢₙ + w.nₘₐₓ) / 2 ))
+    nmid = iseven(nmid - w.nₘᵢₙ) ? nmid : nmid + 1  # ensure start index is even
     f_to_min_m0!(w, nmid, w3j)
     f_to_max_m0!(w, nmid, w3j)
     

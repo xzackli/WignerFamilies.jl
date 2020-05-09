@@ -36,8 +36,33 @@ end
     for j in [j_array[i] for i in [collect(1:100)..., 5001, 7001, 10001-50, 10001]]
         @test w3j[j] ≈ Float64(WignerSymbols.wigner3j(BigFloat, j, j₂, j₃, -m₂-m₃, m₂))
     end
-end
 
+    j₂, j₃, m₂, m₃ = 5000, 5001, 0, 0
+    w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
+    j_array = collect(eachindex(w3j))
+    for j in [j_array[i] for i in [collect(1:100)..., 5001, 7001, 10001-50, 10001]]
+        @test w3j[j] ≈ Float64(WignerSymbols.wigner3j(BigFloat, j, j₂, j₃, -m₂-m₃, m₂))
+    end
+
+    for j₂ in 0:100
+        j₃, m₂, m₃ = 10, 0, 0
+        w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
+        j_array = collect(eachindex(w3j))
+        for j in j_array
+            @test w3j[j] ≈ Float64(WignerSymbols.wigner3j(BigFloat, j, j₂, j₃, -m₂-m₃, m₂))
+        end
+    end
+
+    for j₂ in 0:100
+        j₃, m₂, m₃ = 11, 0, 0
+        w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
+        j_array = collect(eachindex(w3j))
+        for j in j_array
+            @test w3j[j] ≈ Float64(WignerSymbols.wigner3j(BigFloat, j, j₂, j₃, -m₂-m₃, m₂))
+        end
+    end
+end
+##
 @testset "f: edge cases" begin
     j₂, j₃, m₂, m₃ = 2, 2, 4, 4
     w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
