@@ -234,7 +234,6 @@ type is restricted to Int.
 """
 function f_to_min_m0!(w::AbstractWignerF{T, Int}, 
                       nmid::Int, ψ::AbstractVector{T}) where {T}
-    @assert iseven(nmid)
     ψ[nmid] = one(T)
     ψ[nmid+1] = zero(T)
     for n in (nmid+1):2:(w.nₘₐₓ-1)
@@ -246,7 +245,6 @@ end
 
 function f_to_max_m0!(w::AbstractWignerF{T, Int}, 
                       nmid::Int, ψ::AbstractVector{T}) where {T}
-    @assert iseven(nmid)
     ψ[nmid] = one(T)
     ψ[nmid-1] = zero(T)
     for n in (nmid-1):-2:(w.nₘᵢₙ+1)
@@ -274,7 +272,7 @@ stability.
 """
 function classical_wigner3j_m0!(w::AbstractWignerF{T,Int}, w3j::AbstractVector{T}) where T
     nmid = Int( (w.nₘᵢₙ + w.nₘₐₓ) / 2 )
-    nmid = iseven(nmid) ? nmid : nmid + 1  # ensure start index is even
+    nmid = iseven(nmid) ? nmid : nmid  # ensure start index is even
     f_to_min_m0!(w, nmid, w3j)
     f_to_max_m0!(w, nmid, w3j)
     
