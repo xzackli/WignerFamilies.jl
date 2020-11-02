@@ -28,12 +28,13 @@ import WignerSymbols  # only a test-dep, for comparisons
     end
 end
 
+##
 @testset "f: all low j" begin
+    tol = 10*eps()
     j₂ₘₐₓ = 10
     j₃ₘₐₓ = 10
     for j₂=0:j₂ₘₐₓ, j₃=0:j₃ₘₐₓ, m₂=-j₂:j₂, m₃=-j₃:j₃
         m₁ = -m₂ - m₃
-        #@show j₂, j₃, m₂, m₃
         w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
 
         j_array = eachindex(w3j)
@@ -41,17 +42,17 @@ end
                      for j in j_array]
 
         for (i, j) in enumerate(j_array)
-            @test w3j[j] ≈ reference[i]
+            @test w3j[j] ≈ reference[i] atol=tol
         end
 
         # also test specifying different types
         w3j = wigner3j_f(BigFloat, j₂, j₃, m₂, m₃)
         for (i, j) in enumerate(j_array)
-            @test w3j[j] ≈ reference[i]
+            @test w3j[j] ≈ reference[i] atol=tol
         end
         w3j = wigner3j_f(j₂, j₃, m₂, m₃)
         for (i, j) in enumerate(j_array)
-            @test w3j[j] ≈ reference[i]
+            @test w3j[j] ≈ reference[i] atol=tol
         end
     end
 end
@@ -123,6 +124,7 @@ end
         end
     end
 end
+
 ##
 @testset "f: half-integer spin" begin
 

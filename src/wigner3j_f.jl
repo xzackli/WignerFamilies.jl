@@ -60,7 +60,7 @@ function rψ!(w::AbstractWigner{T,Ti}, nmid::Ti, ψ::AbstractVector{T}) where {T
             ψ[n] = -Zψ(w, n) / (Yψ(w, n) + Xψ(w, n) * ψ[n+1])
         end
         if !isfinite(ψ[n])
-            ψ[n] = zero(T)
+            ψ[n] = one(T)
             return n
         end
         if abs(ψ[n]) ≥ 1.0 
@@ -78,7 +78,7 @@ function sψ!(w::AbstractWigner{T,Ti}, nmid::Ti, ψ::AbstractVector{T}) where {T
             ψ[n] = -Xψ(w, n) / (Yψ(w, n) + Zψ(w, n) * ψ[n-1])
         end
         if !isfinite(ψ[n])
-            ψ[n] = zero(T)
+            ψ[n] = one(T)
             return n
         end
         if abs(ψ[n]) ≥ one(T)
@@ -172,9 +172,19 @@ wigner3j_f(j₂, j₃, m₂, m₃) = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
 
 function wigner3j_f!(w::AbstractWignerF{T,Ti}, w3j::AbstractVector{T}) where {T,Ti}
 
-    # special case, if it's just one nontrivial result
+    # special cases, if it's just one nontrivial result
     if length(w3j) == 1
         w3j[w.nₘᵢₙ] = f_jmax_sgn(w) / sqrt(w.nₘᵢₙ + w.j₂ + w.j₃+1)
+        return
+    elseif length(w3j) == 2
+        w3j.symbols .= one(T)
+        sψ!(w, w.nₘᵢₙ, w3j) 
+        norm = one(T) / normalization(w, w3j)
+        if sign(w3j[w.nₘₐₓ]) != f_jmax_sgn(w)
+            norm *= -1
+        end
+        symbols = parent(w3j)
+        symbols .*= norm
         return
     end
 
@@ -196,6 +206,7 @@ function wigner3j_f!(w::AbstractWignerF{T,Ti}, w3j::AbstractVector{T}) where {T,
     # attempt the non-classical two term nonlinear recurrences
     n₊ = rψ!(w, nmid, w3j) 
     n₋ = sψ!(w, nmid, w3j)
+    # w3j[n₋:n₊] .= one(T)
     for k in (n₊+1):w.nₘₐₓ  # product the ratios upwards
         w3j[k] *= w3j[k-1]
     end
@@ -213,12 +224,15 @@ function wigner3j_f!(w::AbstractWignerF{T,Ti}, w3j::AbstractVector{T}) where {T,
             w3j[j] *= scale_middle
         end
     end
+
+
     if n₊ < w.nₘₐₓ
         scale_end = w3j[n₊] / ψn₊
         for j in (n₊+1):w.nₘₐₓ
             w3j[j] *= scale_end
         end
     end
+
     # normalize the results
     norm = one(T) / normalization(w, w3j)
     if sign(w3j[w.nₘₐₓ]) != f_jmax_sgn(w)
