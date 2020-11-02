@@ -28,6 +28,34 @@ import WignerSymbols  # only a test-dep, for comparisons
     end
 end
 
+@testset "f: all low j" begin
+    j₂ₘₐₓ = 10
+    j₃ₘₐₓ = 10
+    for j₂=0:j₂ₘₐₓ, j₃=0:j₃ₘₐₓ, m₂=-j₂:j₂, m₃=-j₃:j₃
+        m₁ = -m₂ - m₃
+        #@show j₂, j₃, m₂, m₃
+        w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
+
+        j_array = eachindex(w3j)
+        reference = [WignerSymbols.wigner3j(Float64, j, j₂, j₃, m₁, m₂)
+                     for j in j_array]
+
+        for (i, j) in enumerate(j_array)
+            @test w3j[j] ≈ reference[i]
+        end
+
+        # also test specifying different types
+        w3j = wigner3j_f(BigFloat, j₂, j₃, m₂, m₃)
+        for (i, j) in enumerate(j_array)
+            @test w3j[j] ≈ reference[i]
+        end
+        w3j = wigner3j_f(j₂, j₃, m₂, m₃)
+        for (i, j) in enumerate(j_array)
+            @test w3j[j] ≈ reference[i]
+        end
+    end
+end
+
 ##
 @testset "f: mᵢ = 0 special case" begin
     j₂, j₃, m₂, m₃ = 5000, 5002, 0, 0
