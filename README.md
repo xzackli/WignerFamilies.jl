@@ -34,7 +34,7 @@ using WignerFamilies
 # wigner3j for all j fixing j₂=100, j₃=60, m₂=70, m₃=-55, m₁=-m₂-m₃
 w3j = wigner3j_f(100, 60, 70, -55) 
 js = collect(eachindex(w3j))  # indices are the quantum numbers
-plot(js, w3j.symbols)   # you can get the underling array with w3j.symbols
+plot(js, w3j.symbols)   # you can get the underlying array with w3j.symbols
 ```
 
 This generates the symbols in Figure 1 of Luscombe and Luban 1998.
