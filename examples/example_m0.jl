@@ -2,7 +2,7 @@ using WignerFamilies
 using PyPlot 
 using WignerSymbols
 
-j₂, j₃, m₂, m₃ = 0, 10, 0, 0
+j₂, j₃, m₂, m₃ = 10, 10, 0, 0
 w = WignerF(Float64, j₂, j₃, m₂, m₃)
 println((w.nₘᵢₙ, w.nₘₐₓ))
 w3j = get_wigner_array(w)
