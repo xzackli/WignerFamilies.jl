@@ -6,7 +6,7 @@
 <!-- ![Lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg) -->
 <!-- [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://xzackli.github.io/WignerFamilies.jl/stable) -->
 
-This package implements methods described in [Luscombe and Luban 1998](https://journals.aps.org/pre/abstract/10.1103/PhysRevE.57.7274), based on the work of [Schulten and Gordon 1961](https://aip.scitation.org/doi/10.1063/1.522426), for generating families of Wigner 3j and 6j symbols by recurrence relation. These exact methods are orders of magnitude more efficient than than strategies like [prime factorization](https://github.com/Jutho/WignerSymbols.jl) for problems which require every non-trivial symbol in a family, and really shine for large quantum numbers. This library is thread-safe and **very fast**, beating the standard Fortran routine DRC3JJ from SLATEC by a factor of 2-4 (see [notebook](test/benchmarks.ipynb)).
+This package implements methods described in [Luscombe and Luban 1998](https://journals.aps.org/pre/abstract/10.1103/PhysRevE.57.7274), based on the work of [Schulten and Gordon 1961](https://aip.scitation.org/doi/10.1063/1.522426), for generating families of Wigner 3j and 6j symbols by recurrence relation. These exact methods are orders of magnitude more efficient than than strategies like [prime factorization](https://github.com/Jutho/WignerSymbols.jl) for problems which require every non-trivial symbol in a family, and really shine for large quantum numbers. This library is thread-safe and **very fast**, beating the standard Fortran routine DRC3JJ from SLATEC by a factor of 2-4 (see [notebook](https://nbviewer.jupyter.org/github/xzackli/WignerFamilies.jl/blob/master/test/benchmarks.ipynb)).
 
 ## Installation
 
