@@ -6,7 +6,7 @@
 <!-- ![Lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg) -->
 <!-- [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://xzackli.github.io/WignerFamilies.jl/stable) -->
 
-This package implements methods described in [Luscombe and Luban 1998](https://journals.aps.org/pre/abstract/10.1103/PhysRevE.57.7274), based on the work of [Schulten and Gordon 1961](https://aip.scitation.org/doi/10.1063/1.522426), for generating families of Wigner 3j and 6j symbols by recurrence relation. It also contains code implementing the magic square methods for efficiently storing Wigner 3j symbols in [Rasch and Yu 2012](https://epubs.siam.org/doi/abs/10.1137/S1064827503422932).
+This package implements methods described in [Luscombe and Luban 1998](https://journals.aps.org/pre/abstract/10.1103/PhysRevE.57.7274), based on the work of [Schulten and Gordon 1961](https://aip.scitation.org/doi/10.1063/1.522426), for generating families of Wigner 3j and 6j symbols by recurrence relation. These exact methods are much faster than [prime factorizations](https://github.com/Jutho/WignerSymbols.jl) for scenarios where one requires every non-trivial symbol in some family, as is common in cosmology. This library is **very fast**, and beats SLATEC by a factor of 2-4 (see [notebook](test/benchmarks.ipynb)).
 
 ## Installation
 
@@ -42,3 +42,26 @@ This generates the symbols in Figure 1 of Luscombe and Luban 1998.
 <img width=90% src="docs/src/assets/luscombe_and_luban_1998.svg">
 </p>
 
+## Advanced Use
+
+One can compute symbols in a fully non-allocating way by using the mutating `wigner3j_f!`. This requires 
+one to initialize a `WignerF` struct describing the problem, put a wrapper around the piece of memory
+you want to deposit the symbols using WignerSymbolVector, and then calling the mutating method.
+
+```julia
+j₂, j₃, m₂, m₃ = 100, 100, -2, 2
+w = WignerF(Float64, j₂, j₃, m₂, m₃)
+buffer = zeros(Float64, length(w.nₘᵢₙ:w.nₘₐₓ))
+w3j = WignerSymbolVector(buffer, w.nₘᵢₙ:w.nₘₐₓ)
+WignerFamilies.wigner3j_f!(w, w3j)
+```
+
+This is the best way to use to get symbols if you're using them in a tight loop, since allocations really hurt in those cases.
+
+```julia
+using BenchmarkTools
+@btime WignerFamilies.wigner3j_f!(w, w3j)
+```
+```
+1.660 μs (0 allocations: 0 bytes)
+```
