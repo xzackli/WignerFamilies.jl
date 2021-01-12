@@ -63,7 +63,7 @@ function rψ!(w::AbstractWigner{T,Ti}, nmid::Ti, ψ::AbstractVector{T}) where {T
             ψ[n] = one(T)
             return n
         end
-        if abs(ψ[n]) ≥ 1.0 
+        if abs(ψ[n]) ≥ 1.0
             return n
         end
     end
@@ -72,7 +72,7 @@ end
 
 function sψ!(w::AbstractWigner{T,Ti}, nmid::Ti, ψ::AbstractVector{T}) where {T,Ti}
     for n in w.nₘᵢₙ:nmid
-        if n == w.nₘᵢₙ       
+        if n == w.nₘᵢₙ
             ψ[n] = -Xψ(w, n) / Yψ(w, n)
         else
             ψ[n] = -Xψ(w, n) / (Yψ(w, n) + Zψ(w, n) * ψ[n-1])
@@ -92,7 +92,7 @@ end
 """
 Three-term recurrence relation for the classical region.
 """
-function ψauxplus!(w::AbstractWignerF{T, Ti}, 
+function ψauxplus!(w::AbstractWignerF{T, Ti},
                    n₋::Ti, nc::Ti, ψ::AbstractVector{T}) where {T, Ti}
     start_index = n₋
     if n₋ == w.nₘᵢₙ
@@ -104,7 +104,7 @@ function ψauxplus!(w::AbstractWignerF{T, Ti},
         end
         start_index = w.nₘᵢₙ+1
     end
-    
+
     for n in start_index:(nc-1)
         Xn = Xψ(w, n)
         if iszero(Xn)
@@ -117,19 +117,19 @@ end
 
 
 function selection_rules(w::AbstractWignerF{T}) where T
-    small = 10 * eps(T)
+    small = 0.1
     return (
-        (abs(w.m₂) < w.j₂ + small) &&
-        (abs(w.m₃) < w.j₃ + small) &&
+        (abs(w.m₂) < abs(w.j₂) + small) &&
+        (abs(w.m₃) < abs(w.j₃) + small) &&
         isinteger(w.m₂ - w.j₂) &&
         isinteger(w.m₃ - w.j₃)
     )
 end
 
 
-A(w::AbstractWignerF, j) = sqrt((j^2 - (w.j₂ - w.j₃)^2) * 
+A(w::AbstractWignerF, j) = sqrt((j^2 - (w.j₂ - w.j₃)^2) *
     ((w.j₂ + w.j₃ + 1)^2 - j^2) * (j^2 - (w.m₂ + w.m₃)^2))
-B(w::AbstractWignerF, j) = (2 * j + 1) * ((w.m₂ + w.m₃) * (w.j₂ * (w.j₂ + 1) - 
+B(w::AbstractWignerF, j) = (2 * j + 1) * ((w.m₂ + w.m₃) * (w.j₂ * (w.j₂ + 1) -
     w.j₃ * (w.j₃ + 1)) - (w.m₂ - w.m₃) * j * (j + 1))
 Xψ(w::AbstractWignerF, j) = j * A(w, j+1)
 Yψ(w::AbstractWignerF, j) = B(w, j)
@@ -146,7 +146,7 @@ f_jmax_sgn(w::AbstractWignerF) = iseven(Int(w.j₂ - w.j₃ + w.m₂ + w.m₃)) 
 """
     wigner3j_f(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real}
 
-Computes all allowed j₁ given fixed j₂, j₃, m₂, m₃, m₁=-m₂-m₃. 
+Computes all allowed j₁ given fixed j₂, j₃, m₂, m₃, m₁=-m₂-m₃.
 
 # Arguments
 - `T::Type{<:Real}`: output array type
@@ -178,7 +178,7 @@ function wigner3j_f!(w::AbstractWignerF{T,Ti}, w3j::AbstractVector{T}) where {T,
         return
     elseif length(w3j) == 2
         w3j.symbols .= one(T)
-        sψ!(w, w.nₘᵢₙ, w3j) 
+        sψ!(w, w.nₘᵢₙ, w3j)
         norm = one(T) / normalization(w, w3j)
         if sign(w3j[w.nₘₐₓ]) != f_jmax_sgn(w)
             norm *= -1
@@ -204,7 +204,7 @@ function wigner3j_f!(w::AbstractWignerF{T,Ti}, w3j::AbstractVector{T}) where {T,
     # otherwise attempt the general solution
     nmid = Ti(ceil((w.nₘᵢₙ + w.nₘₐₓ)/2))
     # attempt the non-classical two term nonlinear recurrences
-    n₊ = rψ!(w, nmid, w3j) 
+    n₊ = rψ!(w, nmid, w3j)
     n₋ = sψ!(w, nmid, w3j)
     # w3j[n₋:n₊] .= one(T)
     for k in (n₊+1):w.nₘₐₓ  # product the ratios upwards
@@ -247,7 +247,7 @@ end
 Special case iteration for mᵢ=0. In this case, j₁ must be an integer too, so the index
 type is restricted to Int.
 """
-function f_to_min_m0!(w::AbstractWignerF{T, Int}, 
+function f_to_min_m0!(w::AbstractWignerF{T, Int},
                       nmid::Int, ψ::AbstractVector{T}) where {T}
     ψ[nmid] = one(T)
     ψ[nmid+1] = zero(T)
@@ -258,7 +258,7 @@ function f_to_min_m0!(w::AbstractWignerF{T, Int},
     end
 end
 
-function f_to_max_m0!(w::AbstractWignerF{T, Int}, 
+function f_to_max_m0!(w::AbstractWignerF{T, Int},
                       nmid::Int, ψ::AbstractVector{T}) where {T}
     ψ[nmid] = one(T)
     ψ[nmid-1] = zero(T)
@@ -273,10 +273,10 @@ end
 """
     classical_wigner3j_m0!(::Type{T}, j₂, j₃, m₂, m₃) where {T<:Real}
 
-Computes all allowed j₁ given fixed j₂, j₃, m₁, m₂, m₃, subject to m₁ = m₂ = m₃ = 0. This 
-applies the classical three-term recurrence relation and iterates two at a time, since in 
-this special case all symbols with odd ∑jᵢ are zero. Unlike other Wigner symbols, this 
-special case requires iterating outwards, as one must recur towards increasing |fⱼ| for 
+Computes all allowed j₁ given fixed j₂, j₃, m₁, m₂, m₃, subject to m₁ = m₂ = m₃ = 0. This
+applies the classical three-term recurrence relation and iterates two at a time, since in
+this special case all symbols with odd ∑jᵢ are zero. Unlike other Wigner symbols, this
+special case requires iterating outwards, as one must recur towards increasing |fⱼ| for
 stability.
 
 # Arguments
@@ -290,7 +290,7 @@ function classical_wigner3j_m0!(w::AbstractWignerF{T,Int}, w3j::AbstractVector{T
     nmid = iseven(nmid - w.nₘᵢₙ) ? nmid : nmid + 1  # ensure start index is even
     f_to_min_m0!(w, nmid, w3j)
     f_to_max_m0!(w, nmid, w3j)
-    
+
     norm = one(T) / normalization(w, w3j)
     if sign(w3j[w.nₘₐₓ]) != f_jmax_sgn(w)
         norm *= -1
@@ -315,10 +315,10 @@ end
 #         j₂, j₃, l₁, l₂, l₃, max(abs(j₂ - j₃), abs(l₂ - l₃)), min(j₂ + j₃, l₂ + l₃))
 # end
 
-# E(w::AbstractWignerH, j) = sqrt((j^2 - (w.j₂ - w.j₃)^2) * ((w.j₂ + w.j₃ + 1)^2 - j^2) * 
+# E(w::AbstractWignerH, j) = sqrt((j^2 - (w.j₂ - w.j₃)^2) * ((w.j₂ + w.j₃ + 1)^2 - j^2) *
 #     (j^2 - (w.l₂ - w.l₃)^2) * ((w.l₂ + w.l₃ + 1)^2 - j^2))
 # F(w::AbstractWignerH, j) = (2j+1) * (
-#     j * (j + 1)  * (-j * (j+1) + w.j₂ * (w.j₂ + 1) + w.j₃ * (w.j₃ + 1) - 2 * w.l₁ * (w.l₁ + 1)) + 
+#     j * (j + 1)  * (-j * (j+1) + w.j₂ * (w.j₂ + 1) + w.j₃ * (w.j₃ + 1) - 2 * w.l₁ * (w.l₁ + 1)) +
 #     w.l₂ * (w.l₂ + 1) * (j * (j+1) + w.j₂ * (w.j₂ + 1) - w.j₃ * (w.j₃ + 1)) +
 #     w.l₃ * (w.l₃ + 1) * (j * (j+1) - w.j₂ * (w.j₂ + 1) + w.j₃ * (w.j₃ + 1))
 # )

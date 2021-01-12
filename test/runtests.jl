@@ -12,7 +12,7 @@ import WignerSymbols  # only a test-dep, for comparisons
     w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
     j_array = collect(eachindex(w3j))
     reference = [WignerSymbols.wigner3j(Float64, j, j₂, j₃, m₁, m₂) for j in j_array]
-    
+
     for (i, j) in enumerate(j_array)
         @test w3j[j] ≈ reference[i]
     end
@@ -101,13 +101,13 @@ end
     j₂, j₃, m₂, m₃ = 2, 2, HalfInt(0.5), HalfInt(0.5)
     w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
     @test length(w3j) == 0
-    
+
     @test wigner3j_f(Float64, 1, 0, 0, 0)[1] ≈ -sqrt(1/3)
     @test wigner3j_f(Float64, 0, 0, 0, 0)[0] ≈ 1.0
     @test wigner3j_f(Float64, 1, 1, 0, 0)[2] ≈ sqrt(2/15)
 end
 
-## bottom of page 14 of Raynal et al. On the zeros of 3j coefficients: polynomial degree 
+## bottom of page 14 of Raynal et al. On the zeros of 3j coefficients: polynomial degree
 # versus recurrence order is an example of sequence of nontrivial zeros
 @testset "f: nontrivial zeros" begin
     tol = eps()
@@ -120,10 +120,22 @@ end
             j₂, j₃, m₂, m₃ = (2X(n_seq)+1)/6, (X(n_seq)+2)/6, HalfInt(3/2), HalfInt(3/2)
             w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
             for j in eachindex(w3j)
-                @test (abs(w3j[j] - 
+                @test (abs(w3j[j] -
                     Float64(WignerSymbols.wigner3j(BigFloat, j, j₂, j₃, -m₂-m₃, m₂))) < tol)
             end
         end
+    end
+end
+
+##
+@testset "f: regression test for selection rules, large negative m" begin
+    j₂ = 48
+    j₃ = 48
+    m₂ = -48
+    m₃ = 48
+    w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
+    for j in eachindex(w3j)
+        @test abs(w3j[j] - WignerSymbols.wigner3j(j, j₂, j₃, -m₂-m₃, m₂)) < 1e-11
     end
 end
 
@@ -134,8 +146,8 @@ end
     m₁ = -w.m₂ - w.m₃
     w3j = get_wigner_array(w)
     wigner3j_f!(w, w3j)
-    
-    reference = [WignerSymbols.wigner3j(Float64, j, w.j₂, w.j₃, m₁, w.m₂) 
+
+    reference = [WignerSymbols.wigner3j(Float64, j, w.j₂, w.j₃, m₁, w.m₂)
                  for j in eachindex(w3j)]
     for (i, j) in enumerate(eachindex(w3j))
         @test w3j[j] ≈ reference[i]
@@ -151,8 +163,8 @@ function confirm_symmetry(maxj)
     end
     m₁, m₂, m₃ = 0, 0, 0
     c1 = rasch_yu_index(Int128, j₁, j₂, j₃, m₁, m₂, m₃)
-    c2 = rasch_yu_index(Int128, 
-        j₁, (j₂ + j₃ - m₁)/2, (j₂ + j₃ + m₁)/2, 
+    c2 = rasch_yu_index(Int128,
+        j₁, (j₂ + j₃ - m₁)/2, (j₂ + j₃ + m₁)/2,
         j₃ - j₂, (j₂ - j₃ - m₁)/2 - m₃, (j₂ - j₃ + m₁)/2 + m₃)
 
     c1, c2
