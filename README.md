@@ -56,7 +56,7 @@ w3j = WignerSymbolVector(buffer, w.nₘᵢₙ:w.nₘₐₓ)
 WignerFamilies.wigner3j_f!(w, w3j)
 ```
 
-This is the best way to use to get symbols if you're using them in a tight loop, since allocations really hurt in those cases.
+This is the best way to get symbols if you're using them in a tight loop, since allocations really hurt in those cases. Typically you would preallocate a buffer and then give this package a `view` into it.
 
 ```julia
 using BenchmarkTools
