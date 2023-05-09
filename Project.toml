@@ -1,7 +1,7 @@
 name = "WignerFamilies"
 uuid = "a8f88a7a-0a89-491c-8ecb-051e99aa9f5e"
 authors = ["xzackli <xzackli@gmail.com> and contributors"]
-version = "1.0.1"
+version = "1.0.2"
 
 [deps]
 CustomUnitRanges = "dc8bdbbb-1ca9-579f-8c36-e416f6a65cce"
@@ -9,9 +9,9 @@ HalfIntegers = "f0d1745a-41c9-11e9-1dd9-e5d34d218721"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 
 [compat]
-HalfIntegers = "1.1"
-OffsetArrays = "1.0"
-CustomUnitRanges = "1.0"
+HalfIntegers = "1"
+OffsetArrays = "1"
+CustomUnitRanges = "1"
 julia = "1"
 
 [extras]
