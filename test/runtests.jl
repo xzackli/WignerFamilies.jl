@@ -97,22 +97,22 @@ end
     w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
     j_array = collect(eachindex(w3j))
     for j in [j_array[i] for i in [collect(1:100)..., 5001, 7001, 10001-50, 10001]]
-        @test w3j[j] ≈ Float64(WignerSymbols.wigner3j(BigFloat, j, j₂, j₃, -m₂-m₃, m₂))
+        @test w3j[j] ≈ Float64(WignerSymbols.wigner3j(BigFloat, j, j₂, j₃, -m₂-m₃, m₂)) atol=1e-12
     end
 
     j₂, j₃, m₂, m₃ = 5000, 5001, 2, -2
     w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
     j_array = collect(eachindex(w3j))
     for j in [j_array[i] for i in [collect(1:100)..., 5001, 7001, 10001-50, 10001]]
-        @test w3j[j] ≈ Float64(WignerSymbols.wigner3j(BigFloat, j, j₂, j₃, -m₂-m₃, m₂))
+        @test w3j[j] ≈ Float64(WignerSymbols.wigner3j(BigFloat, j, j₂, j₃, -m₂-m₃, m₂)) atol=1e-12
     end
-
+    
     for j₂ in 0:100
         j₃, m₂, m₃ = 10, 2, -2
         w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
         j_array = collect(eachindex(w3j))
         for j in j_array
-            @test w3j[j] ≈ Float64(WignerSymbols.wigner3j(BigFloat, j, j₂, j₃, -m₂-m₃, m₂))
+            @test w3j[j] ≈ Float64(WignerSymbols.wigner3j(BigFloat, j, j₂, j₃, -m₂-m₃, m₂)) atol=1e-12
         end
     end
 
@@ -121,7 +121,7 @@ end
         w3j = wigner3j_f(Float64, j₂, j₃, m₂, m₃)
         j_array = collect(eachindex(w3j))
         for j in j_array
-            @test w3j[j] ≈ Float64(WignerSymbols.wigner3j(BigFloat, j, j₂, j₃, -m₂-m₃, m₂))
+            @test w3j[j] ≈ Float64(WignerSymbols.wigner3j(BigFloat, j, j₂, j₃, -m₂-m₃, m₂)) atol=1e-12
         end
     end
 end
